@@ -5,8 +5,6 @@
 // @license      Unlicense
 // @description  Add dual subtitles to YouTube videos
 // @author       Jim Chen
-// @homepage     https://jimchen.me
-// @supportURL   https://github.com/jimchen2/youtube-dual-subtitles/issues
 // @match        https://www.youtube.com/watch?*
 // @match        https://www.youtube.com/embed/*
 // @match        https://m.youtube.com/watch?*
