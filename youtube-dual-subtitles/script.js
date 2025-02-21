@@ -76,7 +76,7 @@
       await Promise.all([addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt&tlang=en`), addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt`)]);
     } else {
       const otherTrack = playerData.find((track) => ["a.en", "en"].includes(track.vssId));
-      await Promise.all([addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt&tlang=de`), addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt`)]);
+      await Promise.all([addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt`), addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt&tlang=de`)]);
     }
   }
 
