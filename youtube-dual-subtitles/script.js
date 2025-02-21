@@ -7,25 +7,31 @@
 // @author       Jim Chen
 // @homepage     https://jimchen.me
 // @supportURL   https://github.com/jimchen2/youtube-dual-subtitles/issues
-// @match        https://www.youtube.com/watch?*
-// @match        https://www.youtube.com/embed/*
-// @match        https://m.youtube.com/watch?*
-// @match        https://m.youtube.com/embed/*
+// @match        https://www.youtube.com/*
+// @match        https://m.youtube.com/*
 // @match        https://cdn.jimchen.me/*
 // @run-at       document-idle
 // @updateURL    https://raw.githubusercontent.com/jimchen2/userscripts/refs/heads/main/youtube-dual-subtitles/script.js
 // @downloadURL  https://raw.githubusercontent.com/jimchen2/userscripts/refs/heads/main/youtube-dual-subtitles/script.js
 // ==/UserScript==
-
 (function () {
   "use strict";
 
   console.log("[Dual Subs] Script initialized");
 
+  let processingSubtitles = false;
+
   async function handleVideoNavigation() {
     console.log("[Dual Subs] Navigation detected");
+    if (!isYouTubeVideo()) {
+      console.log("[Dual Subs] Isn't YouTube Video");
+      return;
+    }
+    if (processingSubtitles) return;
+    processingSubtitles = true;
     removeSubs();
     await processSubtitles();
+    processingSubtitles = false;
   }
 
   async function processSubtitles() {
@@ -56,6 +62,7 @@
 
     await addSubtitles(playerData);
   }
+
   async function addSubtitles(playerData) {
     console.log("[Dual Subs] Finding auto-generated track");
 
@@ -69,12 +76,10 @@
         console.log("[Dual Subs] I am not learning the language of the video");
         return;
       }
-      //sequential awaits, English go bottom
       await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt&tlang=en`);
       await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt`);
     } else {
       const otherTrack = playerData.find((track) => ["a.en", "en"].includes(track.vssId));
-      //sequential awaits, English go bottom
       await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt`);
       await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt&tlang=de`);
     }
@@ -100,6 +105,19 @@
         return addOneSubtitle(url, maxRetries - 1, delay);
       }
     }
+  }
+
+  function isYouTubeVideo() {
+    const url = window.location.href;
+
+    const videoPatterns = [
+      /^https?:\/\/(www\.)?youtube\.com\/watch\?/, // Regular youtube.com/watch
+      /^https?:\/\/(www\.)?youtube\.com\/embed\//, // Embedded videos
+      /^https?:\/\/m\.youtube\.com\/watch\?/, // Mobile youtube
+    ];
+
+    // Return true if any pattern matches
+    return videoPatterns.some((pattern) => pattern.test(url));
   }
 
   function removeSubs() {
