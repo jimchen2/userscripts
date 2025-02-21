@@ -109,5 +109,15 @@
     console.log(`[Dual Subs] Successfully removed ${tracks.length} subtitle track(s)`);
   }
 
-  document.addEventListener("yt-navigate-finish", handleVideoNavigation);
+  let lastUrl = location.href;
+  const observer = new MutationObserver(() => {
+    if (location.href !== lastUrl) {
+      lastUrl = location.href;
+      handleVideoNavigation();
+    }
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  handleVideoNavigation();
 })();
