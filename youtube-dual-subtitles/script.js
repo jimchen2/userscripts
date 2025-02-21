@@ -13,6 +13,8 @@
 // @match        https://m.youtube.com/embed/*
 // @match        https://cdn.jimchen.me/*
 // @run-at       document-idle
+// @updateURL    https://raw.githubusercontent.com/jimchen2/userscripts/refs/heads/main/youtube-dual-subtitles/script.js
+// @downloadURL  https://raw.githubusercontent.com/jimchen2/userscripts/refs/heads/main/youtube-dual-subtitles/script.js
 // ==/UserScript==
 
 (function () {
