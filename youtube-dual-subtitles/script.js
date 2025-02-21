@@ -13,8 +13,6 @@
 // @match        https://m.youtube.com/embed/*
 // @match        https://cdn.jimchen.me/*
 // @run-at       document-idle
-// @downloadURL https://update.greasyfork.org/scripts/527345/YouTube%20Dual%20Subtitles%20for%20French%2C%20German%2C%20Russian%2C%20Ukrainian.user.js
-// @updateURL https://update.greasyfork.org/scripts/527345/YouTube%20Dual%20Subtitles%20for%20French%2C%20German%2C%20Russian%2C%20Ukrainian.meta.js
 // ==/UserScript==
 
 (function () {
