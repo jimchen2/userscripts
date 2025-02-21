@@ -12,11 +12,11 @@
 // @match        *://*.huaren.us/*
 // @match        *://*.tiktok.com/*
 // @match        *://*.douyin.com/*
+// @run-at       document-start
 // @grant        none
 // ==/UserScript==
 
 (function () {
   "use strict";
-  document.body.innerHTML = '<div style="font-size: 100px; font-weight: bold;">Site blocked by Userscript.<br>Time to do something more meaningful!</div>';
   window.stop();
 })();
