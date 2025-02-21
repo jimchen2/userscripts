@@ -12,8 +12,6 @@ If you navigating between videos without a full page reload `window.ytInitialPla
 
 Use `document.getElementsByTagName('ytd-app')[0].data.playerResponse.captions.playerCaptionsTracklistRenderer` in the browser console to find the captions.
 
-Reference: https://github.com/garywill/multi-subs-yt
-
 ### Non-YouTube Method:
 
 1. Download from VK Video/Rutube/1tv/Dzen/Telegram

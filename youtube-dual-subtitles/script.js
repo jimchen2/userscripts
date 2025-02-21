@@ -34,7 +34,9 @@
     const playerData = await new Promise((resolve) => {
       const checkForPlayer = () => {
         console.log("[Dual Subs] Trying to get Caption Data");
-        const ytAppData = window.location.href.startsWith("https://www.youtube") ? document.getElementsByTagName("ytd-app") : document.getElementsByTagName("ytm-app");
+        let ytAppData;
+        if (window.location.href.startsWith("https://www.youtube")) ytAppData = document.getElementsByTagName("ytd-app");
+        else ytAppData = document.getElementsByTagName("ytm-app");
         const captionData = ytAppData[0].data?.playerResponse?.captions?.playerCaptionsTracklistRenderer.captionTracks;
         if (captionData) {
           console.log("[Dual Subs] Successfully retrieved caption data");
@@ -112,5 +114,15 @@
     console.log(`[Dual Subs] Successfully removed ${tracks.length} subtitle track(s)`);
   }
 
-  document.addEventListener("yt-navigate-finish", handleVideoNavigation);
+  let lastUrl = location.href;
+  const observer = new MutationObserver(() => {
+    if (location.href !== lastUrl) {
+      lastUrl = location.href;
+      handleVideoNavigation();
+    }
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  handleVideoNavigation();
 })();
