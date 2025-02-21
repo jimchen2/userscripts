@@ -42,7 +42,7 @@
           setTimeout(checkForPlayer, 1000);
         }
       };
-      checkForPlayer(); // Initial call
+      checkForPlayer();
     });
 
     if (!playerData) {
@@ -65,12 +65,12 @@
         console.log("[Dual Subs] I am not learning the language of the video");
         return;
       }
-      //sequential awaits, English go down
+      //sequential awaits, English go bottom
       await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt&tlang=en`);
       await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt`);
     } else {
       const otherTrack = playerData.find((track) => ["a.en", "en"].includes(track.vssId));
-      //sequential awaits, English go down
+      //sequential awaits, English go bottom
       await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt`);
       await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt&tlang=de`);
     }
@@ -101,17 +101,8 @@
   function removeSubs() {
     console.log("[Dual Subs] Attempting to remove subtitles");
     const video = document.getElementsByTagName("video")[0];
-
-    if (!video) {
-      console.log("[Dual Subs] No video element found");
-      return;
-    }
-
+    if (!video) return;
     const tracks = video.getElementsByTagName("track");
-    if (tracks.length === 0) {
-      return;
-    }
-
     Array.from(tracks).forEach(function (ele) {
       ele.track.mode = "hidden";
       ele.parentNode.removeChild(ele);
@@ -119,16 +110,5 @@
     console.log(`[Dual Subs] Successfully removed ${tracks.length} subtitle track(s)`);
   }
 
-  let lastUrl = location.href;
-  const observer = new MutationObserver(() => {
-    if (location.href !== lastUrl) {
-      lastUrl = location.href;
-      handleVideoNavigation();
-    }
-  });
-
-  observer.observe(document.body, {});
-
-  // Initial run
-  handleVideoNavigation();
+  document.addEventListener("yt-navigate-finish", handleVideoNavigation);
 })();
