@@ -26,18 +26,14 @@
     await processSubtitles();
   }
 
-  let addSubtitlesCalled = 0;
-
   async function processSubtitles() {
     console.log("[Dual Subs] Starting subtitle processing");
 
     const playerData = await new Promise((resolve) => {
       const checkForPlayer = () => {
         console.log("[Dual Subs] Trying to get Caption Data");
-        const captionData = window.location.href.startsWith("https://www.youtube")
-          ? document.getElementsByTagName("ytd-app")[0]?.data?.playerResponse?.captions?.playerCaptionsTracklistRenderer.captionTracks
-          : document.getElementsByTagName("ytm-app")[0]?.data?.playerResponse?.captions?.playerCaptionsTracklistRenderer.captionTracks;
-
+        const ytAppData = window.location.href.startsWith("https://www.youtube") ? document.getElementsByTagName("ytd-app") : document.getElementsByTagName("ytm-app");
+        const captionData = ytAppData[0].data?.playerResponse?.captions?.playerCaptionsTracklistRenderer.captionTracks;
         if (captionData) {
           console.log("[Dual Subs] Successfully retrieved caption data");
           resolve(captionData);
@@ -54,10 +50,6 @@
       return;
     }
 
-    if (addSubtitlesCalled == 1) {
-      return;
-    }
-    addSubtitlesCalled = 1;
     await addSubtitles(playerData);
   }
   async function addSubtitles(playerData) {
@@ -73,16 +65,18 @@
         console.log("[Dual Subs] I am not learning the language of the video");
         return;
       }
-      await Promise.all([addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt&tlang=en`), addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt`)]);
+      //sequential awaits, English go down
+      await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt&tlang=en`);
+      await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt`);
     } else {
       const otherTrack = playerData.find((track) => ["a.en", "en"].includes(track.vssId));
-      await Promise.all([addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt`), addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt&tlang=de`)]);
+      //sequential awaits, English go down
+      await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt`);
+      await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt&tlang=de`);
     }
   }
 
   async function addOneSubtitle(url, maxRetries = 5, delay = 1000) {
-    console.log(`[Dual Subs] Attempting to add subtitles at url ${url}`);
-
     const video = document.querySelector("video");
 
     try {
@@ -90,12 +84,10 @@
       const response = await fetch(url);
       const subtitleData = (await response.text()).replaceAll("align:start position:0%", "");
       const track = document.createElement("track");
-      track.default = true;
       track.src = "data:text/vtt," + encodeURIComponent(subtitleData);
       await new Promise((resolve) => setTimeout(resolve, delay));
       video.appendChild(track);
       track.track.mode = "showing";
-
       console.log(`[Dual Subs] Successfully added one subtitle`);
     } catch (error) {
       if (maxRetries > 0) {
@@ -105,23 +97,6 @@
       }
     }
   }
-
-  // Wait for page load and YouTube's own scripts to initialize
-  let lastUrl = location.href;
-  const observer = new MutationObserver(() => {
-    if (location.href !== lastUrl) {
-      lastUrl = location.href;
-      setTimeout(handleVideoNavigation, 1000);
-    }
-  });
-
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true,
-  });
-
-  // Initial run
-  setTimeout(handleVideoNavigation, 1000);
 
   function removeSubs() {
     console.log("[Dual Subs] Attempting to remove subtitles");
@@ -143,4 +118,17 @@
     });
     console.log(`[Dual Subs] Successfully removed ${tracks.length} subtitle track(s)`);
   }
+
+  let lastUrl = location.href;
+  const observer = new MutationObserver(() => {
+    if (location.href !== lastUrl) {
+      lastUrl = location.href;
+      handleVideoNavigation();
+    }
+  });
+
+  observer.observe(document.body, {});
+
+  // Initial run
+  handleVideoNavigation();
 })();
