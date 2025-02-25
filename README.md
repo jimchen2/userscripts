@@ -1,5 +1,9 @@
 ## My Userscripts
 
+- [block-websites](https://update.greasyfork.org/scripts/528052/Simple%20Website%20Blocker.user.js)
+- [old reddit redirect](https://update.greasyfork.org/scripts/528054/Reddit%20to%20Old%20Reddit%20Redirector.user.js)
+- [YouTube Dual Subtitles](https://update.greasyfork.org/scripts/528053/YouTube%20Dual%20Subtitles%20for%20French%2C%20German%2C%20Russian%2C%20Ukrainian.user.js)
+
 ## YouTube Dual Subtitles
 
 [Userscript (native language: English)](https://raw.githubusercontent.com/jimchen2/userscripts/refs/heads/main/youtube-dual-subtitles/user.js)
