@@ -4,13 +4,9 @@
 
 ![image](https://github.com/user-attachments/assets/859a8f94-ea0e-481b-bc92-08fabc7b94a8)
 
-[Userscript (native language: Chinese)](https://raw.githubusercontent.com/jimchen2/userscripts/refs/heads/main/youtube-dual-subtitles/zh_script.js)
-
-![image](https://github.com/user-attachments/assets/5804be3d-2ef2-4a68-812c-f430c25ca71a)
-
 If you navigating between videos without a full page reload `window.ytInitialPlayerResponse` is going to stay the same.
 
-Use `document.getElementsByTagName('ytd-app')[0].data.playerResponse.captions.playerCaptionsTracklistRenderer` in the browser console to find the captions.
+Use `document.getElementsByTagName('ytd-app')[0].data.playerResponse.captions.playerCaptionsTracklistRenderer` in the browser console to find the captions (or `ytm-app` on mobile). However, the url is going to change faster than this `document.getElementsByTagName('ytd-app')` so try wait for a while.
 
 ### Non-YouTube Method:
 
