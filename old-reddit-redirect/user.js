@@ -8,8 +8,8 @@
 // @exclude      *://old.reddit.com/*
 // @run-at       document-start
 // @grant        none
-// @updateURL    https://raw.githubusercontent.com/jimchen2/userscripts/refs/heads/main/old-reddit-redirect/script.js
-// @downloadURL  https://raw.githubusercontent.com/jimchen2/userscripts/refs/heads/main/old-reddit-redirect/script.js
+// @updateURL    https://raw.githubusercontent.com/jimchen2/userscripts/refs/heads/main/old-reddit-redirect/user.js
+// @downloadURL  https://raw.githubusercontent.com/jimchen2/userscripts/refs/heads/main/old-reddit-redirect/user.js
 // ==/UserScript==
 
 (function() {

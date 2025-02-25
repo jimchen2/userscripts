@@ -5,8 +5,8 @@
 // @description  Enhance local video playback with keyboard controls
 // @author       Jim Chen
 // @match        file:///*
-// @updateURL    https://raw.githubusercontent.com/jimchen2/userscripts/refs/heads/main/local-video-shortcuts/script.js
-// @downloadURL  https://raw.githubusercontent.com/jimchen2/userscripts/refs/heads/main/local-video-shortcuts/script.js
+// @updateURL    https://raw.githubusercontent.com/jimchen2/userscripts/refs/heads/main/local-video-shortcuts/user.js
+// @downloadURL  https://raw.githubusercontent.com/jimchen2/userscripts/refs/heads/main/local-video-shortcuts/user.js
 // @grant        none
 // ==/UserScript==
 

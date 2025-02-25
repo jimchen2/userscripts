@@ -14,8 +14,8 @@
 // @match        *://*.douyin.com/*
 // @run-at       document-start
 // @grant        none
-// @updateURL    https://raw.githubusercontent.com/jimchen2/userscripts/refs/heads/main/block-websites/script.js
-// @downloadURL  https://raw.githubusercontent.com/jimchen2/userscripts/refs/heads/main/block-websites/script.js
+// @updateURL    https://raw.githubusercontent.com/jimchen2/userscripts/refs/heads/main/block-websites/user.js
+// @downloadURL  https://raw.githubusercontent.com/jimchen2/userscripts/refs/heads/main/block-websites/user.js
 // ==/UserScript==
 
 (function () {
