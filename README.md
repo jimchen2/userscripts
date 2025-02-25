@@ -1,6 +1,8 @@
-## Display dual subtitles on YouTube with highlight
+## My Userscripts
 
-[Userscript (native language: English)](https://raw.githubusercontent.com/jimchen2/userscripts/refs/heads/main/youtube-dual-subtitles/script.js)
+## YouTube Dual Subtitles
+
+[Userscript (native language: English)](https://raw.githubusercontent.com/jimchen2/userscripts/refs/heads/main/youtube-dual-subtitles/user.js)
 
 ![image](https://github.com/user-attachments/assets/859a8f94-ea0e-481b-bc92-08fabc7b94a8)
 
