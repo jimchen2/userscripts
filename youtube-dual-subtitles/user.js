@@ -10,6 +10,8 @@
 // @match        https://m.youtube.com/*
 // @match        https://cdn.jimchen.me/*
 // @run-at       document-idle
+// @downloadURL https://update.greasyfork.org/scripts/528053/YouTube%20Dual%20Subtitles%20for%20French%2C%20German%2C%20Russian%2C%20Ukrainian.user.js
+// @updateURL https://update.greasyfork.org/scripts/528053/YouTube%20Dual%20Subtitles%20for%20French%2C%20German%2C%20Russian%2C%20Ukrainian.meta.js
 // ==/UserScript==
 (function () {
   "use strict";
@@ -110,7 +112,7 @@
     } else {
       const otherTrack = playerData.find((track) => ["a.en", "en"].some((code) => track.vssId.includes(code)));
       await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt`);
-      await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt&tlang=de`);
+      await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt&tlang=ru`);
     }
   }
 
