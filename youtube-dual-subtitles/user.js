@@ -23,17 +23,32 @@
   async function handleVideoNavigation() {
     console.log("[Dual Subs] Navigation detected");
 
-    const url = window.location.href;
-    let videoID = null;
+    let videoID = extractYouTubeVideoID();
+    if (videoID == null) return;
 
-    // Regular YouTube URL patterns
+    console.log(`[Dual Subs] videoID ${videoID}`);
+
+    if (processingSubtitles) {
+      console.log(`[Dual Subs] Processed Subtitles, Returning`);
+      return;
+    }
+    processingSubtitles = true;
+    removeSubs();
+    await processSubtitles();
+    processingSubtitles = false;
+  }
+
+  function extractYouTubeVideoID() {
+    const url = window.location.href;
+
     const patterns = {
       standard: /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/,
       embed: /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^?]+)/,
       mobile: /(?:https?:\/\/)?(?:www\.)?youtu\.be\/([^?]+)/,
     };
 
-    // Check each pattern
+    let videoID = null;
+
     if (patterns.standard.test(url)) {
       videoID = url.match(patterns.standard)[1];
     } else if (patterns.embed.test(url)) {
@@ -42,20 +57,10 @@
       videoID = url.match(patterns.mobile)[1];
     }
 
-    console.log(`[Dual Subs] videoID ${videoID}`);
-
-    if (videoID == null) return;
-    if (processingSubtitles) {
-      console.log(`[Dual Subs] Processed Subtitles, Returning`);
-      return;
-    }
-    processingSubtitles = true;
-    removeSubs();
-    await processSubtitles(videoID);
-    processingSubtitles = false;
+    return videoID;
   }
 
-  async function processSubtitles(videoID) {
+  async function processSubtitles() {
     console.log("[Dual Subs] Starting subtitle processing");
 
     const playerData = await new Promise((resolve) => {
@@ -68,6 +73,8 @@
         if (captionData) {
           const fetchedBaseUrl = captionData[0].baseUrl;
           const fetchedVideoID = fetchedBaseUrl.match(/[?&]v=([^&]+)/)?.[1];
+
+          let videoID = extractYouTubeVideoID();
 
           console.log(`[Dual Subs] fetchedVideoID ${fetchedVideoID}`);
 
