@@ -66,10 +66,10 @@
     const playerData = await new Promise((resolve) => {
       const checkForPlayer = () => {
         console.log("[Dual Subs] Trying to get Caption Data");
-        let ytAppData;
-        if (window.location.href.startsWith("https://www.youtube")) ytAppData = document.getElementsByTagName("ytd-app");
-        else ytAppData = document.getElementsByTagName("ytm-app");
-        const captionData = ytAppData[0].data?.playerResponse?.captions?.playerCaptionsTracklistRenderer.captionTracks;
+
+        let ytAppData = document.querySelector("#movie_player");
+        let captionData = ytAppData?.getPlayerResponse()?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+
         if (captionData) {
           const fetchedBaseUrl = captionData[0].baseUrl;
           const fetchedVideoID = fetchedBaseUrl.match(/[?&]v=([^&]+)/)?.[1];
