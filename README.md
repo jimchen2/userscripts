@@ -28,7 +28,9 @@ Example URL:
 https://vk6-3.vkuser.net/?srcIp=23.249.17.195&expires=1740331494117&srcAg=CHROME&fromCache=1&ms=95.142.206.162&mid=9213755271337&type=2&ix=0&subId=7900018182825&sig=R3htBkUoap4&ct=13&urls=185.226.55.155%3B185.226.53.140&clientType=13&appId=512000384397&zs=43&id=7900018182825
 ```
 
-Translate it is enough
+```
+https://vkvd216.okcdn.ru/?srcIp=182.255.32.15&expires=1741518261109&srcAg=CHROME&fromCache=1&ms=45.136.22.152&mid=9158459009161&type=2&ix=0&subId=7863983540873&sig=734uC02dO0Y&ct=13&urls=45.136.21.160&clientType=13&appId=512000384397&id=7863983540873
+```
 
 ### Example YouTube Subtitles URLs:
 
