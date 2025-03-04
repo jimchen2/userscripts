@@ -22,6 +22,12 @@ Use `document.querySelector("#movie_player").getPlayerResponse()?.captions?.play
 
 ### For VK
 
+Do this
+
+```
+document.getElementById('vk_external_ru_0');
+```
+
 Example URL:
 
 ```
