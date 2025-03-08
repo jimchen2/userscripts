@@ -1,3 +1,5 @@
+Planned: Hover words and translate on YouTube, add functionality to VK, split script into multiple files
+
 ## My Userscripts
 
 - [block-websites](https://update.greasyfork.org/scripts/528052/Simple%20Website%20Blocker.user.js)
