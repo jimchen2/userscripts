@@ -2,7 +2,7 @@ Planned: Hover words and translate on YouTube, add functionality to VK, split sc
 
 ## My Userscripts
 
-- [block-websites](https://update.greasyfork.org/scripts/528052/Simple%20Website%20Blocker.user.js)
+- [Block Extremist Websites](https://update.greasyfork.org/scripts/528052/Block%20Extremist%20Websites.user.js)
 - [old reddit redirect](https://update.greasyfork.org/scripts/528054/Reddit%20to%20Old%20Reddit%20Redirector.user.js)
 - [YouTube Dual Subtitles](https://update.greasyfork.org/scripts/528053/YouTube%20Dual%20Subtitles%20for%20French%2C%20German%2C%20Russian%2C%20Ukrainian.user.js)
 
