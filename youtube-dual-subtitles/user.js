@@ -117,9 +117,9 @@
       await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt&tlang=en`);
       await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt`);
     } else {
-      const otherTrack = playerData.find((track) => ["a.en", "en"].some((code) => track.vssId.includes(code)));
-      await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt`);
-      await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt&tlang=ru`);
+ //     const otherTrack = playerData.find((track) => ["a.en", "en"].some((code) => track.vssId.includes(code)));
+ //     await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt`);
+ //     await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt&tlang=ru`);
     }
   }
 
