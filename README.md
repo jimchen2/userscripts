@@ -8,7 +8,7 @@ Planned: Hover words and translate on YouTube, add functionality to VK, split sc
 
 ## YouTube Dual Subtitles
 
-[Userscript (native language: English)](https://raw.githubusercontent.com/jimchen2/userscripts/refs/heads/main/youtube-dual-subtitles/user.js)
+[Userscript (native language: English)](https://update.greasyfork.org/scripts/528708/YouTube%20Dual%20Subtitles%20for%20French%2C%20German%2C%20Russian%2C%20Ukrainian.user.js)
 
 ![image](https://github.com/user-attachments/assets/859a8f94-ea0e-481b-bc92-08fabc7b94a8)
 
