@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Toggle Translation Subtitles for French, German, Russian, Ukrainian
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.0
 // @license      Unlicense
 // @description  Add dual subtitles to YouTube videos
 // @author       Jim Chen
@@ -17,6 +17,9 @@
   console.log("[Dual Subs] Script initialized");
 
   let processingSubtitles = false;
+  let subtitleDiv = null;
+  let subtitleQueue = [];
+  let currentVideo = null;
 
   async function handleVideoNavigation() {
     console.log("[Dual Subs] Navigation detected");
@@ -112,28 +115,75 @@
         console.log("[Dual Subs] I am not learning the language of the video");
         return;
       }
-      // await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt&tlang=en`);
       await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt`);
     }
-    // else {
-    //     const otherTrack = playerData.find((track) => ["a.en", "en"].some((code) => track.vssId.includes(code)));
-    //     await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt`);
-    //     await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt&tlang=ru`);
-    // }
+  }
+
+  function parseVTTTime(timeStr) {
+    const parts = timeStr.split(/[:.]/);
+    return (+parts[0] * 3600 + +parts[1] * 60 + +parts[2]) + (parts[3] ? +parts[3] / 1000 : 0);
   }
 
   async function addOneSubtitle(url, maxRetries = 5, delay = 1000) {
-    const video = document.querySelector("video");
+    currentVideo = document.querySelector("video");
+    if (!currentVideo) return;
 
     try {
       const response = await fetch(url);
       const subtitleData = (await response.text()).replaceAll("align:start position:0%", "");
-      const track = document.createElement("track");
-      track.src = "data:text/vtt," + encodeURIComponent(subtitleData);
-      await new Promise((resolve) => setTimeout(resolve, delay));
-      video.appendChild(track);
-      track.track.mode = "showing";
-      console.log(`[Dual Subs] Successfully added one subtitle`);
+
+      // Create draggable subtitle div
+      subtitleDiv = document.createElement("div");
+      subtitleDiv.style.position = "absolute";
+      subtitleDiv.style.background = "rgba(0,0,0,0.7)";
+      subtitleDiv.style.color = "white";
+      subtitleDiv.style.fontSize = "30px";
+      subtitleDiv.style.padding = "5px";
+      subtitleDiv.style.zIndex = "9999";
+      subtitleDiv.style.bottom = "10%";
+      subtitleDiv.style.left = "50%";
+      subtitleDiv.style.transform = "translateX(-50%)";
+      subtitleDiv.draggable = true;
+
+      subtitleDiv.ondragstart = (e) => e.dataTransfer.setData('text/plain', null);
+      subtitleDiv.ondragend = (e) => {
+        subtitleDiv.style.left = e.pageX + 'px';
+        subtitleDiv.style.bottom = (window.innerHeight - e.pageY) + 'px';
+        subtitleDiv.style.transform = "none";
+      };
+
+      document.body.appendChild(subtitleDiv);
+
+      // Parse VTT and create subtitle queue
+      subtitleQueue = [];
+      const lines = subtitleData.split('\n');
+      let currentEntry = null;
+
+      for (let line of lines) {
+        if (line.includes('-->')) {
+          const [start, end] = line.split(' --> ');
+          currentEntry = {
+            start: parseVTTTime(start),
+            end: parseVTTTime(end),
+            text: ''
+          };
+        } else if (line.trim() && currentEntry && !line.startsWith('WEBVTT')) {
+          currentEntry.text = line.trim();
+          subtitleQueue.push(currentEntry);
+          currentEntry = null;
+        }
+      }
+
+      // Sync subtitles with video
+      currentVideo.ontimeupdate = () => {
+        const currentTime = currentVideo.currentTime;
+        const activeSub = subtitleQueue.find(sub =>
+          currentTime >= sub.start && currentTime <= sub.end
+        );
+        subtitleDiv.textContent = activeSub ? activeSub.text : '';
+      };
+
+      console.log(`[Dual Subs] Successfully added subtitle display`);
     } catch (error) {
       if (maxRetries > 0) {
         console.log(`[Dual Subs] Retrying... (${maxRetries} attempts remaining)`);
@@ -152,7 +202,15 @@
       ele.track.mode = "hidden";
       ele.parentNode.removeChild(ele);
     });
-    console.log(`[Dual Subs] Successfully removed ${tracks.length} subtitle track(s)`);
+    if (subtitleDiv) {
+      subtitleDiv.remove();
+      subtitleDiv = null;
+    }
+    if (currentVideo) {
+      currentVideo.ontimeupdate = null;
+    }
+    subtitleQueue = [];
+    console.log(`[Dual Subs] Successfully removed subtitles`);
   }
 
   let lastUrl = location.href;
