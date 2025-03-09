@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         YouTube Dual Subtitles for French, German, Russian, Ukrainian
+// @name         YouTube Toggle Translation Subtitles for French, German, Russian, Ukrainian
 // @namespace    http://tampermonkey.net/
 // @version      1.1
 // @license      Unlicense
@@ -112,7 +112,7 @@
         console.log("[Dual Subs] I am not learning the language of the video");
         return;
       }
-      await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt&tlang=en`);
+      // await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt&tlang=en`);
       await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt`);
     }
     // else {
