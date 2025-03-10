@@ -17,10 +17,6 @@
   console.log("[Dual Subs] Script initialized");
 
   let processingSubtitles = false;
-  let subtitleDiv = null;
-  let subtitleQueue = [];
-  let currentVideo = null;
-
   async function handleVideoNavigation() {
     console.log("[Dual Subs] Navigation detected");
 
@@ -114,11 +110,13 @@
         console.log("[Dual Subs] I am not learning the language of the video");
         return;
       }
-      await addOneSubtitle(`${otherTrack.baseUrl}&fmt=srt`);
+      await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt`);
     }
   }
 
   async function addOneSubtitle(url, maxRetries = 5, delay = 1000) {
+    let currentVideo = null;
+
     currentVideo = document.querySelector("video");
     if (!currentVideo) return;
 
@@ -126,7 +124,60 @@
       const response = await fetch(url);
       const subtitleData = await response.text();
 
-      // Parse SRT time format (00:00:00,000)
+      function parseVTTTime(timeStr) {
+        const parts = timeStr.split(/[:,\.]/);
+        return +parts[0] * 3600 + +parts[1] * 60 + +parts[2] + +parts[3] / 1000;
+      }
+
+      function parseVTT(subtitleData) {
+        subtitleQueue = [];
+        const lines = subtitleData.split("\n");
+        let i = 0;
+
+        // Skip the WEBVTT header and any comments/styles
+        while (i < lines.length && !lines[i].includes("-->") && lines[i].trim() !== "") {
+          i++;
+        }
+
+        while (i < lines.length) {
+          if (lines[i].trim() === "") {
+            i++;
+            continue;
+          }
+          if (lines[i].includes("-->")) {
+            // Handle timestamp line
+            const timeMatch = lines[i].match(/(\d+:\d+:\d+\.\d+)\s+-->\s+(\d+:\d+:\d+\.\d+)/);
+            if (timeMatch) {
+              const [_, start, end] = timeMatch;
+              let text = "";
+              i++;
+
+              // Collect all text lines until an empty line
+              while (i < lines.length && lines[i].trim() !== "") {
+                text += (text ? " " : "") + lines[i].trim();
+                i++;
+              }
+
+              subtitleQueue.push({
+                start: parseVTTTime(start),
+                end: parseVTTTime(end),
+                text: text,
+              });
+            } else {
+              i++;
+            }
+          } else {
+            // Skip identifiers or other non-timing lines
+            i++;
+          }
+        }
+        return subtitleQueue;
+      }
+
+      let subtitleDiv = null;
+      let subtitleQueue = [];
+
+      subtitleQueue = parseVTT(subtitleData);
 
       function createSubtitleDiv() {
         // Find the video container and get its dimensions
@@ -134,6 +185,7 @@
 
         // Create subtitle div
         subtitleDiv = document.createElement("div");
+        subtitleDiv.id = "video-subitles";
         subtitleDiv.style.position = "absolute";
         subtitleDiv.style.background = "rgba(0,0,0,0.7)";
         subtitleDiv.style.color = "white";
@@ -158,56 +210,35 @@
 
       createSubtitleDiv();
 
-      function parseSRTTime(timeStr) {
-        const parts = timeStr.split(/[:,]/);
-        return +parts[0] * 3600 + +parts[1] * 60 + +parts[2] + +parts[3] / 1000;
+      function createSubtitleElement(text) {
+        const element = document.createElement("div");
+        element.textContent = text;
+        return element;
       }
 
-      function pasreSRT(subtitleData) {
-        subtitleQueue = [];
-        const lines = subtitleData.split("\n");
-        let i = 0;
-
-        while (i < lines.length) {
-          if (lines[i].trim() === "" || /^\d+$/.test(lines[i].trim())) {
-            i++;
-            continue;
-          }
-          if (lines[i].includes("-->")) {
-            const [start, end] = lines[i].split(" --> ");
-            let text = "";
-            i++;
-            while (i < lines.length && lines[i].trim() !== "") {
-              text += (text ? " " : "") + lines[i].trim();
-              i++;
-            }
-            subtitleQueue.push({
-              start: parseSRTTime(start),
-              end: parseSRTTime(end),
-              text: text,
-            });
-          } else {
-            i++;
-          }
+      function displaySubtitle(index) {
+        if (index >= 0 && index < subtitleQueue.length) {
+          const subtitle = subtitleQueue[index];
+          return createSubtitleElement(subtitle.text);
         }
-        return subtitleQueue;
+        return null;
       }
 
-      subtitleQueue = pasreSRT(subtitleData);
-
-      // Sync subtitles with video
       currentVideo.ontimeupdate = () => {
         const currentTime = currentVideo.currentTime;
         const currentIndex = subtitleQueue.findIndex((sub) => currentTime >= sub.start && currentTime <= sub.end);
-        const activeSub = currentIndex !== -1 ? subtitleQueue[currentIndex] : null;
-        const nextSub = currentIndex !== -1 && currentIndex < subtitleQueue.length - 1 ? subtitleQueue[currentIndex + 1] : null;
 
-        let displayText = activeSub ? activeSub.text : "";
-        if (nextSub) {
-          displayText += "\n" + nextSub.text;
+        // Clear the subtitle div first
+        while (subtitleDiv.firstChild) {
+          subtitleDiv.removeChild(subtitleDiv.firstChild);
         }
 
-        subtitleDiv.textContent = displayText;
+        if (currentIndex !== -1) {
+          subtitleDiv.appendChild(displaySubtitle(currentIndex));
+          if (currentIndex < subtitleQueue.length - 1) {
+            subtitleDiv.appendChild(displaySubtitle(currentIndex + 1));
+          }
+        }
       };
 
       console.log(`[Dual Subs] Successfully added subtitle display. Found ${subtitleQueue.length} subtitles.`);
