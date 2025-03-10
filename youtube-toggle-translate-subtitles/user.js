@@ -163,7 +163,7 @@
         return +parts[0] * 3600 + +parts[1] * 60 + +parts[2] + +parts[3] / 1000;
       }
 
-      function pasreSRT() {
+      function pasreSRT(subtitleData) {
         subtitleQueue = [];
         const lines = subtitleData.split("\n");
         let i = 0;
@@ -190,15 +190,24 @@
             i++;
           }
         }
+        return subtitleQueue;
       }
 
-      pasreSRT();
+      subtitleQueue = pasreSRT(subtitleData);
 
       // Sync subtitles with video
       currentVideo.ontimeupdate = () => {
         const currentTime = currentVideo.currentTime;
-        const activeSub = subtitleQueue.find((sub) => currentTime >= sub.start && currentTime <= sub.end);
-        subtitleDiv.textContent = activeSub ? activeSub.text : "";
+        const currentIndex = subtitleQueue.findIndex((sub) => currentTime >= sub.start && currentTime <= sub.end);
+        const activeSub = currentIndex !== -1 ? subtitleQueue[currentIndex] : null;
+        const nextSub = currentIndex !== -1 && currentIndex < subtitleQueue.length - 1 ? subtitleQueue[currentIndex + 1] : null;
+
+        let displayText = activeSub ? activeSub.text : "";
+        if (nextSub) {
+          displayText += "\n" + nextSub.text;
+        }
+
+        subtitleDiv.textContent = displayText;
       };
 
       console.log(`[Dual Subs] Successfully added subtitle display. Found ${subtitleQueue.length} subtitles.`);
