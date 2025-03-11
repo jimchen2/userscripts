@@ -115,6 +115,7 @@
     // 1. Parse VTT
     // 2. Create HTML Element
     // 3. Display Subtitle
+    // 4. Add Translation
 
     let currentVideo = null;
 
@@ -122,10 +123,8 @@
     if (!currentVideo) return;
 
     try {
-      // Step 1
-
+      // Step 1 - Parse VTT (unchanged)
       console.log(`[Dual Subs] Starting Step 1, Trying to Fetch and Parse Subtitles`);
-
       const response = await fetch(url);
       const subtitleData = await response.text();
 
@@ -139,7 +138,6 @@
         const lines = subtitleData.split("\n");
         let i = 0;
 
-        // Skip the WEBVTT header and any comments/styles
         while (i < lines.length && !lines[i].includes("-->") && lines[i].trim() !== "") {
           i++;
         }
@@ -150,40 +148,44 @@
             continue;
           }
           if (lines[i].includes("-->")) {
-            // Handle timestamp line
             const timeMatch = lines[i].match(/(\d+:\d+:\d+\.\d+)\s+-->\s+(\d+:\d+:\d+\.\d+)/);
             if (timeMatch) {
               const [_, start, end] = timeMatch;
-              let text = "";
+              let textLines = [];
+              let currentLine = "";
               i++;
 
-              // Collect all text lines until an empty line
               while (i < lines.length && lines[i].trim() !== "") {
-                text += (text ? " " : "") + lines[i].trim();
+                if (currentLine) {
+                  currentLine += " " + lines[i].trim();
+                } else {
+                  currentLine = lines[i].trim();
+                }
                 i++;
               }
+
+              textLines = currentLine
+                .split(/\n/)
+                .map((line) => line.trim())
+                .filter((line) => line);
 
               subtitleQueue.push({
                 start: parseVTTTime(start),
                 end: parseVTTTime(end),
-                text: text,
+                textLines: textLines,
               });
             } else {
               i++;
             }
           } else {
-            // Skip identifiers or other non-timing lines
             i++;
           }
         }
         return subtitleQueue;
       }
-
       var subtitleQueue = parseVTT(subtitleData);
 
-      // console.log(subtitleQueue);
-
-      // Step 2
+      // Step 2 - Create HTML Element
       // Example:
       // <div class="caption-window ytp-caption-window-bottom" id="caption-window-_52" dir="ltr" tabindex="0" draggable="true" style="touch-action: none; background-color: rgba(8, 8, 8, 0.25); text-align: center; left: 50%; width: 511px; margin-left: -255.5px; bottom: 2%;">
       //   <span class="captions-text" style="overflow-wrap: normal; display: block;">
@@ -193,45 +195,74 @@
       //   </span>
       // </div>
       // from Language Reactor
+      // Add Sliding Effect
 
       console.log(`[Dual Subs] Starting Step 2, Trying to Insert Subtitle Element`);
-
-      // Function to create the caption window and insert it into the HTML5 video player
       function createCaptionWindow() {
-        // Find the HTML5 video player container
         const videoPlayer = document.querySelector(".html5-video-player");
-
         if (!videoPlayer) {
           console.error("HTML5 video player not found");
-          return;
+          return null;
         }
 
-        // Create the caption window div
         const captionWindow = document.createElement("div");
         captionWindow.className = "caption-window ytp-caption-window-bottom";
         captionWindow.dir = "ltr";
         captionWindow.tabIndex = 0;
         captionWindow.draggable = true;
-        captionWindow.setAttribute("style", "touch-action: none; background-color: rgba(8, 8, 8, 0.25); text-align: center; left: 50%; width: 511px; margin-left: -255.5px; bottom: 2%;");
+        captionWindow.style.cssText = `
+                touch-action: none;
+                background-color: rgba(8, 8, 8, 0.25);
+                text-align: center;
+                left: 50%;
+                width: 511px;
+                margin-left: -255.5px;
+                bottom: 2%;
+            `;
 
-        // Create the caption text span
         const captionsText = document.createElement("span");
         captionsText.className = "captions-text";
-        captionsText.setAttribute("style", "overflow-wrap: normal; display: block;");
+        captionsText.style.cssText = "overflow-wrap: normal; display: block;";
 
-        // Create the caption visual line span
         const captionVisualLine = document.createElement("span");
         captionVisualLine.className = "caption-visual-line";
-        captionVisualLine.setAttribute("style", "display: block;");
+        captionVisualLine.style.cssText = "display: block;";
 
-        // Create the caption segment span with the Russian text
         const ytpCaptionSegment = document.createElement("span");
         ytpCaptionSegment.className = "ytp-caption-segment";
-        ytpCaptionSegment.setAttribute(
-          "style",
-          "display: inline-block; white-space: pre-wrap; background: rgba(8, 8, 8, 0.75); font-size: 25.475px; color: rgb(255, 255, 255); fill: rgb(255, 255, 255);"
-        );
-        ytpCaptionSegment.textContent = "Userscript for Subtitles Starting";
+        ytpCaptionSegment.style.cssText = `
+                display: inline-block;
+                white-space: pre-wrap;
+                background: rgba(8, 8, 8, 0.75);
+                font-size: 25.475px;
+                color: rgb(255, 255, 255);
+                fill: rgb(255, 255, 255);
+                position: relative;
+            `;
+
+        const textContent = "Userscript for Subtitles Starting";
+        const coloredSpan = document.createElement("span");
+        coloredSpan.textContent = textContent;
+        coloredSpan.style.cssText = `
+                background: linear-gradient(to right, #FFFDD0 0%, #FFFDD0 50%, #ffffff 50%, #ffffff 100%);
+                background-size: 200% 100%;
+                background-position: 100%;
+                color: transparent;
+                background-clip: text;
+                -webkit-background-clip: text;
+                animation: slideColor 3s linear infinite;
+            `;
+
+        const styleSheet = document.createElement("style");
+        styleSheet.textContent = `
+                @keyframes slideColor {
+                    0% { background-position: 100%; }
+                    100% { background-position: 0%; }
+                }
+            `;
+        document.head.appendChild(styleSheet);
+
+        ytpCaptionSegment.appendChild(coloredSpan);
         captionVisualLine.appendChild(ytpCaptionSegment);
         captionsText.appendChild(captionVisualLine);
         captionWindow.appendChild(captionsText);
@@ -240,77 +271,185 @@
         return ytpCaptionSegment;
       }
 
-      // Execute the function
       var ytpCaptionSegment = createCaptionWindow();
 
-      // Step 3: Update captions based on video time
-      // All you need to change is ytpCaptionSegment.textContent
-
+      // Step 3 - Display Subtitle (unchanged)
       console.log(`[Dual Subs] Starting Step 3, Trying to Insert the Subtitles into the Elements Created`);
+      function updateSubtitle(currentSubtitle) {
+        if (!ytpCaptionSegment) return;
 
-      function updateSubtitle() {
-        // Step 3.1: Try to Find Subtitle in the specific time
-
-        const currentTime = currentVideo.currentTime;
-
-        // Find the subtitle that matches the current time
-        const currentSubtitle = subtitleQueue.find((sub) => currentTime >= sub.start && currentTime <= sub.end);
-
-        // Step 3.2: Process and highlight (Karaoke style), use the built in <c> tags
-        // Example:
-        // Какие съёмки уже задолбали
-        // <00:00:04.520><c> Я</c><00:00:04.720><c> не</c><00:00:05.279><c> хочу</c><00:00:06.279><c>
-        // сниматься</c><00:00:07.200><c> каждый</c>
+        while (ytpCaptionSegment.firstChild) {
+          ytpCaptionSegment.removeChild(ytpCaptionSegment.firstChild);
+        }
 
         if (currentSubtitle) {
+          console.log(`[Dual Subs] currentSubtitle: ${currentSubtitle.textLines.join(" | ")}`);
           ytpCaptionSegment.style.display = "inline-block";
-          if (currentSubtitle.text.includes("<c>")) {
-            const currentTime = currentVideo.currentTime;
-            const timeTagRegex = /<(\d{2}:\d{2}:\d{2}\.\d{3})><c>(.*?)<\/c>/g;
-            let matches = [];
-            let match;
 
-            // Extract all time-tagged parts
-            while ((match = timeTagRegex.exec(currentSubtitle.text)) !== null) {
-              const timeStr = match[1];
-              const text = match[2];
-              const time = parseVTTTime(timeStr);
+          currentSubtitle.textLines.forEach((line, lineIndex) => {
+            const lineSpan = document.createElement("span");
+            lineSpan.style.display = "block";
 
-              matches.push({ time, text });
-            }
+            if (line.includes("<c>")) {
+              const currentTime = currentVideo.currentTime;
+              const timeTagRegex = /<(\d{2}:\d{2}:\d{2}\.\d{3})><c>(.*?)<\/c>/g;
+              let matches = [];
+              let match;
+              let lastIndex = 0;
 
-            // Sort by time
-            matches.sort((a, b) => a.time - b.time);
+              while ((match = timeTagRegex.exec(line)) !== null) {
+                const timeStr = match[1];
+                const text = match[2];
+                const time = parseVTTTime(timeStr);
 
-            // Build HTML with highlighted parts based on current time
-            let html = "";
-            for (let i = 0; i < matches.length; i++) {
-              const { time, text } = matches[i];
-              const nextTime = i < matches.length - 1 ? matches[i + 1].time : currentSubtitle.end;
+                if (match.index > lastIndex) {
+                  const untaggedText = line.slice(lastIndex, match.index).trim();
+                  if (untaggedText) {
+                    const untaggedSpan = document.createElement("span");
+                    untaggedSpan.textContent = untaggedText;
 
-              // If current time is past this timing tag
-              if (currentTime >= time) {
-                // Highlight this segment
-                html += `<span style="color: yellow;">${text}</span> `;
-              } else {
-                // Normal color for future segments
-                html += `<span>${text}</span> `;
+                    const firstTagTime = matches.length === 0 ? time : matches[0].time;
+                    if (currentTime >= firstTagTime) {
+                      untaggedSpan.style.color = "#FFFDD0";
+                    } else if (currentTime > currentSubtitle.start) {
+                      const duration = firstTagTime - currentSubtitle.start;
+                      const progress = (currentTime - currentSubtitle.start) / duration;
+                      untaggedSpan.style.cssText = `
+                                            background-size: 100% 100%;
+                                            color: transparent;
+                                            background-clip: text;
+                                            -webkit-background-clip: text;
+                                            transition: background-position 0.1s linear;
+                                        `;
+                    }
+                    lineSpan.appendChild(untaggedSpan);
+                    lineSpan.appendChild(document.createTextNode(" "));
+                  }
+                }
+
+                matches.push({ time, text, index: match.index });
+                lastIndex = timeTagRegex.lastIndex;
               }
+
+              if (lastIndex < line.length) {
+                const untaggedText = line.slice(lastIndex).trim();
+                if (untaggedText) {
+                  const untaggedSpan = document.createElement("span");
+                  untaggedSpan.textContent = untaggedText;
+                  lineSpan.appendChild(untaggedSpan);
+                  lineSpan.appendChild(document.createTextNode(" "));
+                }
+              }
+
+              matches.sort((a, b) => a.time - b.time);
+
+              for (let i = 0; i < matches.length; i++) {
+                const { time, text } = matches[i];
+                const nextTime = i < matches.length - 1 ? matches[i + 1].time : currentSubtitle.end;
+
+                const span = document.createElement("span");
+                span.textContent = text;
+                console.log(`[Dual Subs] text: ${text}`);
+
+                if (currentTime >= time && currentTime < nextTime) {
+                  span.style.cssText = `
+                                    background: linear-gradient(to right, #FFFDD0 0%, #FFFDD0 50%, #ffffff 50%, #ffffff 100%);
+                                    background-size: 200% 100%;
+                                    background-position: ${((currentTime - time) / (nextTime - time)) * 100}%;
+                                    color: transparent;
+                                    background-clip: text;
+                                    -webkit-background-clip: text;
+                                    transition: background-position 0.1s linear;
+                                `;
+                } else if (currentTime >= nextTime) {
+                  span.style.color = "#FFFDD0";
+                }
+
+                lineSpan.appendChild(span);
+                lineSpan.appendChild(document.createTextNode(" "));
+              }
+            } else {
+              lineSpan.textContent = line;
             }
 
-            ytpCaptionSegment.innerHTML = html;
-          } else {
-            ytpCaptionSegment.textContent = currentSubtitle.text;
-          }
+            ytpCaptionSegment.appendChild(lineSpan);
+          });
         } else {
           ytpCaptionSegment.style.display = "none";
         }
       }
 
-      // Step 3.3: Add Eventlistener to the Update Function
-      currentVideo.addEventListener("timeupdate", updateSubtitle);
+      function setupTimeUpdateListener() {
+        currentVideo.addEventListener("timeupdate", () => {
+          const currentTime = currentVideo.currentTime;
+          const currentSubtitle = subtitleQueue.find((sub) => currentTime >= sub.start && currentTime <= sub.end);
+          updateSubtitle(currentSubtitle);
+        });
+      }
 
-      console.log(`[Subtitles] Successfully added subtitle display. Found ${subtitleQueue.length} subtitles.`);
+      setupTimeUpdateListener();
+
+      // Step 4 - Add Hover Effect with Translation
+      console.log(`[Dual Subs] Starting Step 4, Adding Hover Translation Effect`);
+      function addHoverTranslation() {
+        const captionSegment = document.querySelector(".ytp-caption-segment");
+        if (!captionSegment) {
+          console.error("[Dual Subs] Caption segment not found for translation setup");
+          return;
+        }
+
+        // Function to translate text to English using Google Translate API
+        async function translateToEnglish(text) {
+          try {
+            const response = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`);
+            const data = await response.json();
+            return data[0][0][0]; // Extract translated text
+          } catch (error) {
+            console.error("[Dual Subs] Translation error:", error);
+            return "Translation failed";
+          }
+        }
+
+        // Add hover functionality to the entire caption segment
+        let tooltip = null;
+
+        captionSegment.addEventListener("mouseenter", async function () {
+          const originalText = this.textContent.trim();
+          const translation = await translateToEnglish(originalText);
+
+          // Create tooltip
+          tooltip = document.createElement("div");
+          tooltip.textContent = translation;
+          tooltip.style.cssText = `
+                    position: absolute;
+                    background: rgba(0, 0, 0, 0.9);
+                    color: white;
+                    padding: 5px 10px;
+                    border-radius: 3px;
+                    font-size: 14px;
+                    bottom: 100%;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    z-index: 1000;
+                    white-space: nowrap;
+                `;
+          this.appendChild(tooltip);
+        });
+
+        captionSegment.addEventListener("mouseleave", function () {
+          if (tooltip) {
+            tooltip.remove();
+            tooltip = null;
+          }
+        });
+
+        // Style the caption segment to indicate it's hoverable
+        captionSegment.style.cursor = "pointer";
+      }
+
+      addHoverTranslation();
+
+      console.log(`[Subtitles] Successfully added subtitle display with hover translation. Found ${subtitleQueue.length} subtitles.`);
     } catch (error) {
       console.error("[Dual Subs] Error:", error);
       if (maxRetries > 0) {
