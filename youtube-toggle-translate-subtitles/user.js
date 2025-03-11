@@ -94,12 +94,6 @@
       return;
     }
 
-    await addSubtitles(playerData);
-  }
-
-  async function addSubtitles(playerData) {
-    console.log("[Dual Subs] Finding auto-generated track");
-
     const hasForeignTrack = playerData.some(({ vssId }) => /(ru|uk|de|fr)/.test(vssId));
 
     if (hasForeignTrack) {
@@ -110,6 +104,9 @@
         console.log("[Dual Subs] I am not learning the language of the video");
         return;
       }
+
+      console.log(`[Dual Subs] Calling addOneSubtitle, Subtitle URL: ${otherTrack.baseUrl}&fmt=vtt}`);
+
       await addOneSubtitle(`${otherTrack.baseUrl}&fmt=vtt`);
     }
   }
@@ -117,8 +114,7 @@
   async function addOneSubtitle(url, maxRetries = 5, delay = 1000) {
     // 1. Parse VTT
     // 2. Create HTML Element
-    // 3. Display highlight of subtitle
-    // 4. Display Subtitle
+    // 3. Display Subtitle
 
     let currentVideo = null;
 
@@ -127,6 +123,8 @@
 
     try {
       // Step 1
+
+      console.log(`[Dual Subs] Starting Step 1, Trying to Fetch and Parse Subtitles`);
 
       const response = await fetch(url);
       const subtitleData = await response.text();
@@ -137,7 +135,7 @@
       }
 
       function parseVTT(subtitleData) {
-        subtitleQueue = [];
+        var subtitleQueue = [];
         const lines = subtitleData.split("\n");
         let i = 0;
 
@@ -181,76 +179,138 @@
         return subtitleQueue;
       }
 
+      var subtitleQueue = parseVTT(subtitleData);
+
+      // console.log(subtitleQueue);
+
       // Step 2
+      // Example:
+      // <div class="caption-window ytp-caption-window-bottom" id="caption-window-_52" dir="ltr" tabindex="0" draggable="true" style="touch-action: none; background-color: rgba(8, 8, 8, 0.25); text-align: center; left: 50%; width: 511px; margin-left: -255.5px; bottom: 2%;">
+      //   <span class="captions-text" style="overflow-wrap: normal; display: block;">
+      //     <span class="caption-visual-line" style="display: block;">
+      //       <span class="ytp-caption-segment" style="display: inline-block; white-space: pre-wrap; background: rgba(8, 8, 8, 0.75); font-size: 25.475px; color: rgb(255, 255, 255); fill: rgb(255, 255, 255);">если он отключит Starlink, мы с вами&nbsp;</span>
+      //     </span>
+      //   </span>
+      // </div>
+      // from Language Reactor
 
-      let subtitleDiv = null;
-      let subtitleQueue = [];
+      console.log(`[Dual Subs] Starting Step 2, Trying to Insert Subtitle Element`);
 
-      subtitleQueue = parseVTT(subtitleData);
+      // Function to create the caption window and insert it into the HTML5 video player
+      function createCaptionWindow() {
+        // Find the HTML5 video player container
+        const videoPlayer = document.querySelector(".html5-video-player");
 
-      function createSubtitleDiv() {
-        // Find the video container and get its dimensions
-        const videoRect = currentVideo.getBoundingClientRect();
-
-        // Create subtitle div
-        subtitleDiv = document.createElement("div");
-        subtitleDiv.id = "video-subitles";
-        subtitleDiv.style.position = "absolute";
-        subtitleDiv.style.background = "rgba(0,0,0,0.7)";
-        subtitleDiv.style.color = "white";
-        subtitleDiv.style.fontSize = "30px";
-        subtitleDiv.style.padding = "5px";
-        subtitleDiv.style.zIndex = "9999";
-        subtitleDiv.style.width = "fit-content";
-        subtitleDiv.style.maxWidth = "80%";
-        subtitleDiv.style.textAlign = "center";
-
-        // Initial position: centered at the bottom of the video
-        const initialX = videoRect.left + videoRect.width / 2;
-        const initialY = videoRect.bottom - 50; // 50px from bottom of video
-
-        subtitleDiv.style.left = initialX + "px";
-        subtitleDiv.style.top = initialY + "px";
-        subtitleDiv.style.transform = "translateX(-50%)"; // Center horizontally
-
-        // Add the subtitle div to the body
-        document.body.appendChild(subtitleDiv);
-      }
-
-      createSubtitleDiv();
-
-      function createSubtitleElement(text) {
-        const element = document.createElement("div");
-        element.textContent = text;
-        return element;
-      }
-
-      function displaySubtitle(index) {
-        if (index >= 0 && index < subtitleQueue.length) {
-          const subtitle = subtitleQueue[index];
-          return createSubtitleElement(subtitle.text);
+        if (!videoPlayer) {
+          console.error("HTML5 video player not found");
+          return;
         }
-        return null;
+
+        // Create the caption window div
+        const captionWindow = document.createElement("div");
+        captionWindow.className = "caption-window ytp-caption-window-bottom";
+        captionWindow.dir = "ltr";
+        captionWindow.tabIndex = 0;
+        captionWindow.draggable = true;
+        captionWindow.setAttribute("style", "touch-action: none; background-color: rgba(8, 8, 8, 0.25); text-align: center; left: 50%; width: 511px; margin-left: -255.5px; bottom: 2%;");
+
+        // Create the caption text span
+        const captionsText = document.createElement("span");
+        captionsText.className = "captions-text";
+        captionsText.setAttribute("style", "overflow-wrap: normal; display: block;");
+
+        // Create the caption visual line span
+        const captionVisualLine = document.createElement("span");
+        captionVisualLine.className = "caption-visual-line";
+        captionVisualLine.setAttribute("style", "display: block;");
+
+        // Create the caption segment span with the Russian text
+        const ytpCaptionSegment = document.createElement("span");
+        ytpCaptionSegment.className = "ytp-caption-segment";
+        ytpCaptionSegment.setAttribute(
+          "style",
+          "display: inline-block; white-space: pre-wrap; background: rgba(8, 8, 8, 0.75); font-size: 25.475px; color: rgb(255, 255, 255); fill: rgb(255, 255, 255);"
+        );
+        ytpCaptionSegment.textContent = "Userscript for Subtitles Starting";
+        captionVisualLine.appendChild(ytpCaptionSegment);
+        captionsText.appendChild(captionVisualLine);
+        captionWindow.appendChild(captionsText);
+        videoPlayer.appendChild(captionWindow);
+
+        return ytpCaptionSegment;
       }
 
-      currentVideo.ontimeupdate = () => {
+      // Execute the function
+      var ytpCaptionSegment = createCaptionWindow();
+
+      // Step 3: Update captions based on video time
+      // All you need to change is ytpCaptionSegment.textContent
+
+      console.log(`[Dual Subs] Starting Step 3, Trying to Insert the Subtitles into the Elements Created`);
+
+      function updateSubtitle() {
+        // Step 3.1: Try to Find Subtitle in the specific time
+
         const currentTime = currentVideo.currentTime;
-        const currentIndex = subtitleQueue.findIndex((sub) => currentTime >= sub.start && currentTime <= sub.end);
 
-        // Clear the subtitle div first
-        while (subtitleDiv.firstChild) {
-          subtitleDiv.removeChild(subtitleDiv.firstChild);
-        }
+        // Find the subtitle that matches the current time
+        const currentSubtitle = subtitleQueue.find((sub) => currentTime >= sub.start && currentTime <= sub.end);
 
-        if (currentIndex !== -1) {
-          subtitleDiv.appendChild(displaySubtitle(currentIndex));
-          if (currentIndex < subtitleQueue.length - 1) {
-            subtitleDiv.appendChild(displaySubtitle(currentIndex + 1));
+        // Step 3.2: Process and highlight (Karaoke style), use the built in <c> tags
+        // Example:
+        // Какие съёмки уже задолбали
+        // <00:00:04.520><c> Я</c><00:00:04.720><c> не</c><00:00:05.279><c> хочу</c><00:00:06.279><c>
+        // сниматься</c><00:00:07.200><c> каждый</c>
+
+        if (currentSubtitle) {
+          ytpCaptionSegment.style.display = "inline-block";
+          if (currentSubtitle.text.includes("<c>")) {
+            const currentTime = currentVideo.currentTime;
+            const timeTagRegex = /<(\d{2}:\d{2}:\d{2}\.\d{3})><c>(.*?)<\/c>/g;
+            let matches = [];
+            let match;
+
+            // Extract all time-tagged parts
+            while ((match = timeTagRegex.exec(currentSubtitle.text)) !== null) {
+              const timeStr = match[1];
+              const text = match[2];
+              const time = parseVTTTime(timeStr);
+
+              matches.push({ time, text });
+            }
+
+            // Sort by time
+            matches.sort((a, b) => a.time - b.time);
+
+            // Build HTML with highlighted parts based on current time
+            let html = "";
+            for (let i = 0; i < matches.length; i++) {
+              const { time, text } = matches[i];
+              const nextTime = i < matches.length - 1 ? matches[i + 1].time : currentSubtitle.end;
+
+              // If current time is past this timing tag
+              if (currentTime >= time) {
+                // Highlight this segment
+                html += `<span style="color: yellow;">${text}</span> `;
+              } else {
+                // Normal color for future segments
+                html += `<span>${text}</span> `;
+              }
+            }
+
+            ytpCaptionSegment.innerHTML = html;
+          } else {
+            ytpCaptionSegment.textContent = currentSubtitle.text;
           }
+        } else {
+          ytpCaptionSegment.style.display = "none";
         }
-      };
+      }
 
-      console.log(`[Dual Subs] Successfully added subtitle display. Found ${subtitleQueue.length} subtitles.`);
+      // Step 3.3: Add Eventlistener to the Update Function
+      currentVideo.addEventListener("timeupdate", updateSubtitle);
+
+      console.log(`[Subtitles] Successfully added subtitle display. Found ${subtitleQueue.length} subtitles.`);
     } catch (error) {
       console.error("[Dual Subs] Error:", error);
       if (maxRetries > 0) {
@@ -273,23 +333,3 @@
 
   handleVideoNavigation();
 })();
-
-
-
-
-
-
-
-
-
-
-
-
-
-// <div class="caption-window ytp-caption-window-bottom" id="caption-window-_52" dir="ltr" tabindex="0" draggable="true" style="touch-action: none; background-color: rgba(8, 8, 8, 0.25); text-align: center; left: 50%; width: 511px; margin-left: -255.5px; bottom: 2%;">
-//   <span class="captions-text" style="overflow-wrap: normal; display: block;">
-//     <span class="caption-visual-line" style="display: block;">
-//       <span class="ytp-caption-segment" style="display: inline-block; white-space: pre-wrap; background: rgba(8, 8, 8, 0.75); font-size: 25.475px; color: rgb(255, 255, 255); fill: rgb(255, 255, 255);">если он отключит Starlink, мы с вами&nbsp;</span>
-//     </span>
-//   </span>
-// </div>
