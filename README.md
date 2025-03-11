@@ -5,5 +5,5 @@
 
 ## YouTube Related
 
-- [YouTube Dual Subtitles](https://github.com/jimchen2/youtube-dual-subtitles]
+- [YouTube Dual Subtitles](https://github.com/jimchen2/youtube-dual-subtitles)
 - [YouTube Subtitles Toggle Translation](https://github.com/jimchen2/youtube-subtitles-toggle-transation)
