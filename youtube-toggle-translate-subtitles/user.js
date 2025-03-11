@@ -115,12 +115,19 @@
   }
 
   async function addOneSubtitle(url, maxRetries = 5, delay = 1000) {
+    // 1. Parse VTT
+    // 2. Create HTML Element
+    // 3. Display highlight of subtitle
+    // 4. Display Subtitle
+
     let currentVideo = null;
 
     currentVideo = document.querySelector("video");
     if (!currentVideo) return;
 
     try {
+      // Step 1
+
       const response = await fetch(url);
       const subtitleData = await response.text();
 
@@ -173,6 +180,8 @@
         }
         return subtitleQueue;
       }
+
+      // Step 2
 
       let subtitleDiv = null;
       let subtitleQueue = [];
@@ -264,3 +273,23 @@
 
   handleVideoNavigation();
 })();
+
+
+
+
+
+
+
+
+
+
+
+
+
+// <div class="caption-window ytp-caption-window-bottom" id="caption-window-_52" dir="ltr" tabindex="0" draggable="true" style="touch-action: none; background-color: rgba(8, 8, 8, 0.25); text-align: center; left: 50%; width: 511px; margin-left: -255.5px; bottom: 2%;">
+//   <span class="captions-text" style="overflow-wrap: normal; display: block;">
+//     <span class="caption-visual-line" style="display: block;">
+//       <span class="ytp-caption-segment" style="display: inline-block; white-space: pre-wrap; background: rgba(8, 8, 8, 0.75); font-size: 25.475px; color: rgb(255, 255, 255); fill: rgb(255, 255, 255);">если он отключит Starlink, мы с вами&nbsp;</span>
+//     </span>
+//   </span>
+// </div>
