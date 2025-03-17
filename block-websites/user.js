@@ -11,6 +11,7 @@
 // @match        *://*.tiebac.baidu.com/*
 // @match        *://*.weifan.baidu.com/*
 // @match        *://*.nani.baidu.com/*
+// @match        *://www.baidu.com/
 // @match        *://*.reddit.com/r/China_irl/*
 // @match        *://*.huaren.us/*
 // @match        *://*.tiktok.com/*
