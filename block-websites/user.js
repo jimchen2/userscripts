@@ -20,6 +20,7 @@
 // @match        *://*.mastodon.social/*
 // @match        *://*.bsky.app/*
 // @match        *://*.truthsocial.com/*
+// @match        *://*.onlyfans.com/*
 // @match        *://*.kiwifarms.st/*
 // @match        *://*.infowars.com/*
 // @match        *://*.zombsroyale.io/*
