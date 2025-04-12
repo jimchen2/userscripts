@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Video Keyboard Shortcuts (Bilibili, VK Video, Local)
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.2
 // @license      Unlicense
-// @description  Press "/" to focus search (Bilibili/VK Video), video controls (Shift+>/<, j,k,l, 0-9) for Bilibili, VK Video, and local files.
+// @description  Press "/" to focus search (Bilibili/VK Video), video controls (Shift+>/< (Б/Ю), j/k/l (о/л/д), 0-9) for Bilibili, VK Video, and local files.
 // @author       Jim Chen / Adapted
 // @match        *://*.bilibili.com/*
 // @match        *://vkvideo.ru/*
@@ -19,8 +19,9 @@
         const activeElement = document.activeElement;
         const isInputElement = activeElement && /input|textarea/i.test(activeElement.tagName);
 
+        // If typing in an input/textarea, only allow Escape to blur
         if (isInputElement) {
-            if (e.key === 'Escape') {
+            if (e.key === 'Escape' ) {
                 activeElement.blur();
             }
             return;
@@ -30,7 +31,8 @@
         const isBilibili = hostname.includes('bilibili.com');
         const isVkVideo = hostname.includes('vkvideo.ru');
 
-        if (e.key === '/') {
+        // --- Search Focus ---
+        if (e.key === '/' || e.key === '.') {
             let searchInput = null;
 
             if (isBilibili) {
@@ -66,26 +68,23 @@
             if (video.duration && isFinite(video.duration)) {
                 video.currentTime = (percentage / 100) * video.duration;
             }
-            return; // Handled
+            return;
         }
 
-        let keyHandled = false; // Flag to check if a video key was processed
+        let keyHandled = false;
 
-        // Playback Speed Control (Shift + >/<)
-        if (e.shiftKey && e.key === '>') {
+        if (e.shiftKey && (e.key === '>' || e.key === 'Ю')) { // Increase speed
             video.playbackRate = Math.min(video.playbackRate + 0.25, 4); // Capped at 4x
             keyHandled = true;
-        } else if (e.shiftKey && e.key === '<') {
+        } else if (e.shiftKey && (e.key === '<' || e.key === 'Б')) { // Decrease speed
             video.playbackRate = Math.max(video.playbackRate - 0.25, 0.25); // Minimum 0.25x
             keyHandled = true;
         }
-        // Seek Backward (j)
-        else if (e.key === 'j' || e.key === 'J') {
+        else if (e.key === 'j' || e.key === 'J' || e.key === 'о' || e.key === 'О') {
             video.currentTime = Math.max(video.currentTime - 10, 0);
             keyHandled = true;
         }
-        // Play/Pause (k)
-        else if (e.key === 'k' || e.key === 'K') {
+        else if (e.key === 'k' || e.key === 'K' || e.key === 'л' || e.key === 'Л') {
             if (video.paused) {
                 video.play().catch(err => console.error("Play failed:", err)); // Add error handling for play()
             } else {
@@ -93,8 +92,7 @@
             }
             keyHandled = true;
         }
-        // Seek Forward (l)
-        else if (e.key === 'l' || e.key === 'L') {
+        else if (e.key === 'l' || e.key === 'L' || e.key === 'д' || e.key === 'Д') {
              if (video.duration && isFinite(video.duration)) {
                 video.currentTime = Math.min(video.currentTime + 10, video.duration);
             }
