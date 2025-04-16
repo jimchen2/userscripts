@@ -8,4 +8,4 @@
 
 ## Mobile
 
-- [YouTUbe Mobile Search Length](https://raw.githubusercontent.com/jimchen2/userscripts/master/youtube-mobile-length.js)
+- [YouTube Mobile Search Length](https://raw.githubusercontent.com/jimchen2/userscripts/master/youtube-mobile-length.js)
