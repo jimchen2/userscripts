@@ -2,7 +2,7 @@
 // @name         YouTube Sanctions
 // @description  YouTube Shorts Blocker and Extremist Content Blocker
 // @namespace    http://tampermonkey.net/
-// @version      1.3
+// @version      1.4
 // @author       Jim Chen
 // @match        https://www.youtube.com/*
 // @match        https://m.youtube.com/*
@@ -44,36 +44,55 @@
     "Ходорковский LIVE",
   ];
 
-  // Channel Page Block
-
-  // Channel Page Block with retry mechanism
-  if (
-    window.location.href.match(
+  // Function to check if we're on a channel page
+  function isChannelPage() {
+    return window.location.href.match(
       /(?:m\.)?youtube\.com\/(?!(results|watch|feed|playlist|shorts|embed|live|account|gaming|reporthistory|t\/|clip\/|hashtag\/|explore))([^\/\?]+$|(@[^\/]+)|user\/|c\/|channel\/)/
-    )
-  ) {
+    );
+  }
+
+  // Function to check and block channel page
+  function checkChannelPage() {
+    if (!isChannelPage()) return;
+    
     const checkChannelName = () => {
-      const channelNameElement = document.querySelector(".page-header-view-model-wiz__page-header-title h1.dynamic-text-view-model-wiz__h1");
+      // For desktop YouTube
+      let channelNameElement = document.querySelector(".page-header-view-model-wiz__page-header-title h1.dynamic-text-view-model-wiz__h1");
+      
+      // For mobile YouTube
+      if (!channelNameElement) {
+        channelNameElement = document.querySelector("h1.channel-name");
+      }
+      
       if (channelNameElement) {
         const channelName = channelNameElement.textContent.trim();
         if (channelName) {
           if (extremistChannels.some((channel) => channelName.toLowerCase() === channel.toLowerCase())) {
             window.location.href = "https://jw.ustc.edu.cn";
-            return true; // Successfully found and checked
+            return true;
           }
-          return true; // Successfully found, not a match
+          return true;
         }
       }
-      setTimeout(checkChannelName, 500); // Retry after 500ms
+      
+      // If element not found but we're on a channel page, keep trying
+      if (isChannelPage()) {
+        setTimeout(checkChannelName, 500); // Retry after 500ms
+      }
       return false;
     };
+    
     checkChannelName();
   }
 
-  const shortsPageRegex = /^https:\/\/www\.youtube\.com\/shorts.*/;
-  if (shortsPageRegex.test(window.location.href)) {
-    window.location.href = "https://jw.ustc.edu.cn";
+  // Check for Shorts page
+  function checkShortsPage() {
+    const shortsPageRegex = /^https:\/\/(?:www|m)\.youtube\.com\/shorts.*/;
+    if (shortsPageRegex.test(window.location.href)) {
+      window.location.href = "https://jw.ustc.edu.cn";
+    }
   }
+
   // Function to remove Shorts from feed
   const removeShorts = () => {
     Array.from(document.querySelectorAll(`a[href^="/shorts"]`)).forEach((a) => {
@@ -150,6 +169,14 @@
     blockChannels();
   };
 
+  // Function to run all checks
+  function runChecks() {
+    checkShortsPage();
+    checkChannelPage();
+    runFilters();
+  }
+
+  // Set up mutation observer for content changes
   const observer = new MutationObserver(runFilters);
 
   // Start observing main app container
@@ -171,6 +198,24 @@
     });
   }
 
-  // Initial cleanup
-  runFilters();
+  // Listen for URL changes
+  // Override the History API methods
+  const originalPushState = history.pushState;
+  const originalReplaceState = history.replaceState;
+
+  history.pushState = function() {
+    originalPushState.apply(this, arguments);
+    runChecks();
+  };
+
+  history.replaceState = function() {
+    originalReplaceState.apply(this, arguments);
+    runChecks();
+  };
+
+  // Listen for popstate events (when using back/forward browser buttons)
+  window.addEventListener('popstate', runChecks);
+
+  // Initial checks
+  runChecks();
 })();

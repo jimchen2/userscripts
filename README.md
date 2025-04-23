@@ -8,7 +8,7 @@
 
 ### Other Websites
 
-- [Sanction-Websites](https://raw.githubusercontent.com/jimchen2/userscripts/master/sanction-websites.user.js): Stable
+- [Website-Sanctions](https://raw.githubusercontent.com/jimchen2/userscripts/master/website-sanctions.user.js): Stable
 - [Old-Reddit-Redirect](https://raw.githubusercontent.com/jimchen2/userscripts/master/old-reddit-redirect.user.js): Stable
 - [Video-Keyboard-Shortcuts(computer Only)](https://raw.githubusercontent.com/jimchen2/userscripts/master/video-keyboard-shortcuts.user.js): Stable
 
