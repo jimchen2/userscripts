@@ -12,6 +12,7 @@
 // @match        *://*.weifan.baidu.com/*
 // @match        *://*.nani.baidu.com/*
 // @match        *://*.reddit.com/r/China_irl/*
+// @match        *://*.reddit.com/r/LiberalGooseGroup/*
 // @match        *://*.huaren.us/*
 // @match        *://*.tiktok.com/*
 // @match        *://*.pincong.rocks/*
