@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Video Sites Enhancer
 // @namespace    http://tampermonkey.net/
-// @version      1.0.4
+// @version      1.0.5
 // @license      Unlicense
 // @description  Add keyboard shortcuts and dual subtitles to YouTube videos
 // @author       Jim Chen
@@ -17,7 +17,7 @@
 // @run-at       document-idle
 // ==/UserScript==
 (function () {
-  if (location.href.startsWith("https://www.youtube.com/watch")) {
+  if (location.href.startsWith("https://www.youtube.com")) {
     document.addEventListener("yt-navigate-finish", () => {
       handleVideoNavigation();
     });
@@ -50,11 +50,13 @@
   }
 
   async function extractSubtitleUrl() {
+
     function extractYouTubeVideoID() {
       const url = window.location.href;
       const patterns = {
-        standard: /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/,
-        embed: /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^?]+)/,
+          standard: /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?(?:[^?&]+&)*v=([^&]+)/,
+          embed: /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^?]+)/,
+        mobile: /(?:https?:\/\/)?(?:m\.)?youtube\.com\/watch\?v=([^&]+)/,
       };
 
       let videoID = null;
@@ -62,10 +64,11 @@
         videoID = url.match(patterns.standard)[1];
       } else if (patterns.embed.test(url)) {
         videoID = url.match(patterns.embed)[1];
-      } 
+      }else if (patterns.mobile.test(url)) {
+        videoID = url.match(patterns.mobile)[1];
+      }
       return videoID;
     }
-
     let videoID = extractYouTubeVideoID();
     if (videoID == null) return;
 
