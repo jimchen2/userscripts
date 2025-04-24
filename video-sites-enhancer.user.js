@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Video Sites Enhancer
 // @namespace    http://tampermonkey.net/
-// @version      1.0.5
+// @version      1.0.6
 // @license      Unlicense
 // @description  Add keyboard shortcuts and dual subtitles to YouTube videos
 // @author       Jim Chen
@@ -22,20 +22,42 @@
       handleVideoNavigation();
     });
   } else if (location.href.startsWith("https://m.youtube.com")) {
-    window.addEventListener("popstate", handleVideoNavigation);
-    const originalPushState = history.pushState;
-    const originalReplaceState = history.replaceState;
-    history.pushState = function () {
-      const result = originalPushState.apply(this, arguments);
-      handleVideoNavigation();
-      return result;
-    };
 
-    history.replaceState = function () {
-      const result = originalReplaceState.apply(this, arguments);
-      handleVideoNavigation();
-      return result;
-    };
+
+let lastUrl = window.location.href.split('#')[0];
+
+function checkUrlChanged() {
+  const currentUrl = window.location.href.split('#')[0];
+  console.log("url", window.location.href);
+  console.log("last url", lastUrl);
+
+  if (currentUrl !== lastUrl) {
+    lastUrl = currentUrl;
+    handleVideoNavigation();
+  }
+}
+
+window.addEventListener("popstate", checkUrlChanged);
+
+const originalPushState = history.pushState;
+const originalReplaceState = history.replaceState;
+
+history.pushState = function() {
+  const result = originalPushState.apply(this, arguments);
+  checkUrlChanged();
+  return result;
+};
+
+history.replaceState = function() {
+  const result = originalReplaceState.apply(this, arguments);
+  checkUrlChanged();
+  return result;
+};
+
+handleVideoNavigation();
+
+
+
   } else if (location.href.startsWith("https://www.youtube.com/embed")) {
     handleVideoNavigation();
   }
@@ -75,7 +97,7 @@
     const playerData = await new Promise((resolve, reject) => {
       let retries = 0;
       const checkForPlayer = (maxRetries = 2, delay = 3000) => {
-        console.log("CHECKED");
+        console.log("CHECKED, retries", retries);
         let ytAppData = document.querySelector("#movie_player");
         let captionData = ytAppData?.getPlayerResponse()?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
 
