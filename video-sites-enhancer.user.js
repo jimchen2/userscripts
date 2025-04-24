@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Video Sites Enhancer
 // @namespace    http://tampermonkey.net/
-// @version      1.0.3
+// @version      1.0.4
 // @license      Unlicense
 // @description  Add keyboard shortcuts and dual subtitles to YouTube videos
 // @author       Jim Chen
@@ -55,7 +55,6 @@
       const patterns = {
         standard: /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/,
         embed: /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^?]+)/,
-        nocookie: /(?:https?:\/\/)?(?:www\.)?youtube-nocookie\.com\/embed\/([^?]+)/,
       };
 
       let videoID = null;
@@ -63,9 +62,7 @@
         videoID = url.match(patterns.standard)[1];
       } else if (patterns.embed.test(url)) {
         videoID = url.match(patterns.embed)[1];
-      } else if (patterns.nocookie.test(url)) {
-        videoID = url.match(patterns.nocookie)[1];
-      }
+      } 
       return videoID;
     }
 
