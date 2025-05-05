@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Video Sites Enhancer
 // @namespace    http://tampermonkey.net/
-// @version      1.0.7
+// @version      1.0.8
 // @license      Unlicense
 // @description  Add keyboard shortcuts and dual subtitles to YouTube videos
 // @author       Jim Chen
@@ -97,7 +97,7 @@ handleVideoNavigation();
 
     const playerData = await new Promise((resolve, reject) => {
       let retries = 0;
-      const checkForPlayer = (maxRetries = 2, delay = 3000) => {
+      const checkForPlayer = (maxRetries = 5, delay = 1000) => {
         console.log("CHECKED, retries", retries);
         let ytAppData = document.querySelector("#movie_player");
         let captionData = ytAppData?.getPlayerResponse()?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
@@ -137,7 +137,7 @@ handleVideoNavigation();
     }
   }
 
-  async function addOneSubtitle(url, maxRetries = 2, delay = 3000) {
+  async function addOneSubtitle(url, maxRetries = 5, delay = 1000) {
     const video = document.querySelector("video");
     try {
       const response = await fetch(url);
@@ -150,7 +150,7 @@ handleVideoNavigation();
     } catch (error) {
       if (maxRetries > 0) {
         await new Promise((resolve) => setTimeout(resolve, delay));
-        return addOneSubtitle(url, maxRetries - 1, delay);
+        return addOneSubtitle(url, maxRetries - 1, delay*maxRetries);
       }
     }
   }
