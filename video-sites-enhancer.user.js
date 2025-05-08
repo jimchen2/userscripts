@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Video Sites Enhancer
 // @namespace    http://tampermonkey.net/
-// @version      1.0.8
+// @version      1.0.9
 // @license      Unlicense
 // @description  Add keyboard shortcuts and dual subtitles to YouTube videos
 // @author       Jim Chen
@@ -18,47 +18,57 @@
 // @run-at       document-idle
 // ==/UserScript==
 (function () {
+
   if (location.href.startsWith("https://www.youtube.com")) {
     document.addEventListener("yt-navigate-finish", () => {
+      if (window.location.pathname === "/") {
+        window.location.href = "https://www.youtube.com/feed/subscriptions";
+        return;
+      }
       handleVideoNavigation();
     });
   } else if (location.href.startsWith("https://m.youtube.com")) {
+    if (window.location.pathname === "/") {
+      window.location.href = "https://m.youtube.com/feed/subscriptions";
+      return;
+    }
 
+    let lastUrl = window.location.href.split('#')[0];
 
-let lastUrl = window.location.href.split('#')[0];
+    function checkUrlChanged() {
+      const currentUrl = window.location.href.split('#')[0];
+      console.log("url", window.location.href);
+      console.log("last url", lastUrl);
 
-function checkUrlChanged() {
-  const currentUrl = window.location.href.split('#')[0];
-  console.log("url", window.location.href);
-  console.log("last url", lastUrl);
+      if (currentUrl !== lastUrl) {
+        lastUrl = currentUrl;
+        // Check if redirected to homepage
+        if (new URL(currentUrl).pathname === "/") {
+          window.location.href = "https://m.youtube.com/feed/subscriptions";
+          return;
+        }
+        handleVideoNavigation();
+      }
+    }
 
-  if (currentUrl !== lastUrl) {
-    lastUrl = currentUrl;
+    window.addEventListener("popstate", checkUrlChanged);
+
+    const originalPushState = history.pushState;
+    const originalReplaceState = history.replaceState;
+
+    history.pushState = function() {
+      const result = originalPushState.apply(this, arguments);
+      checkUrlChanged();
+      return result;
+    };
+
+    history.replaceState = function() {
+      const result = originalReplaceState.apply(this, arguments);
+      checkUrlChanged();
+      return result;
+    };
+
     handleVideoNavigation();
-  }
-}
-
-window.addEventListener("popstate", checkUrlChanged);
-
-const originalPushState = history.pushState;
-const originalReplaceState = history.replaceState;
-
-history.pushState = function() {
-  const result = originalPushState.apply(this, arguments);
-  checkUrlChanged();
-  return result;
-};
-
-history.replaceState = function() {
-  const result = originalReplaceState.apply(this, arguments);
-  checkUrlChanged();
-  return result;
-};
-
-handleVideoNavigation();
-
-
-
   } else if (location.href.startsWith("https://www.youtube.com/embed")) {
     handleVideoNavigation();
   }
