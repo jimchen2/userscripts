@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Video Sites Enhancer
 // @namespace    http://tampermonkey.net/
-// @version      1.0.9
+// @version      1.0.8
 // @license      Unlicense
 // @description  Add keyboard shortcuts and dual subtitles to YouTube videos
 // @author       Jim Chen
@@ -18,35 +18,20 @@
 // @run-at       document-idle
 // ==/UserScript==
 (function () {
-
   if (location.href.startsWith("https://www.youtube.com")) {
     document.addEventListener("yt-navigate-finish", () => {
-      if (window.location.pathname === "/") {
-        window.location.href = "https://www.youtube.com/feed/subscriptions";
-        return;
-      }
       handleVideoNavigation();
     });
   } else if (location.href.startsWith("https://m.youtube.com")) {
-    if (window.location.pathname === "/") {
-      window.location.href = "https://m.youtube.com/feed/subscriptions";
-      return;
-    }
-
-    let lastUrl = window.location.href.split('#')[0];
+    let lastUrl = window.location.href.split("#")[0];
 
     function checkUrlChanged() {
-      const currentUrl = window.location.href.split('#')[0];
+      const currentUrl = window.location.href.split("#")[0];
       console.log("url", window.location.href);
       console.log("last url", lastUrl);
 
       if (currentUrl !== lastUrl) {
         lastUrl = currentUrl;
-        // Check if redirected to homepage
-        if (new URL(currentUrl).pathname === "/") {
-          window.location.href = "https://m.youtube.com/feed/subscriptions";
-          return;
-        }
         handleVideoNavigation();
       }
     }
@@ -56,13 +41,13 @@
     const originalPushState = history.pushState;
     const originalReplaceState = history.replaceState;
 
-    history.pushState = function() {
+    history.pushState = function () {
       const result = originalPushState.apply(this, arguments);
       checkUrlChanged();
       return result;
     };
 
-    history.replaceState = function() {
+    history.replaceState = function () {
       const result = originalReplaceState.apply(this, arguments);
       checkUrlChanged();
       return result;
@@ -83,12 +68,11 @@
   }
 
   async function extractSubtitleUrl() {
-
     function extractYouTubeVideoID() {
       const url = window.location.href;
       const patterns = {
-          standard: /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?(?:[^?&]+&)*v=([^&]+)/,
-          embed: /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^?]+)/,
+        standard: /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?(?:[^?&]+&)*v=([^&]+)/,
+        embed: /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^?]+)/,
         mobile: /(?:https?:\/\/)?(?:m\.)?youtube\.com\/watch\?v=([^&]+)/,
       };
 
@@ -97,7 +81,7 @@
         videoID = url.match(patterns.standard)[1];
       } else if (patterns.embed.test(url)) {
         videoID = url.match(patterns.embed)[1];
-      }else if (patterns.mobile.test(url)) {
+      } else if (patterns.mobile.test(url)) {
         videoID = url.match(patterns.mobile)[1];
       }
       return videoID;
@@ -160,7 +144,7 @@
     } catch (error) {
       if (maxRetries > 0) {
         await new Promise((resolve) => setTimeout(resolve, delay));
-        return addOneSubtitle(url, maxRetries - 1, delay*maxRetries);
+        return addOneSubtitle(url, maxRetries - 1, delay * maxRetries);
       }
     }
   }
