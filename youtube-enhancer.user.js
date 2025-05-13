@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Enhancer
 // @namespace    http://tampermonkey.net/
-// @version      1.0.10
+// @version      1.0.11
 // @license      Unlicense
 // @description  Add dual subtitles to YouTube videos
 // @author       Jim Chen
@@ -56,10 +56,7 @@
     if (subtitleURL == null) return;
     await addOneSubtitle(subtitleURL);
 
-    if (!(language === "ru" || language === "a.ru")) {
-      // Add English subtitle only if not Russian
-      await addOneSubtitle(subtitleURL + "&tlang=en");
-    }
+    await addOneSubtitle(subtitleURL + "&tlang=en");
   }
 
   async function extractSubtitleUrl() {
