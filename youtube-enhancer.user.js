@@ -54,9 +54,8 @@
     removeSubs();
     const { url: subtitleURL, language } = await extractSubtitleUrl();
     if (subtitleURL == null) return;
-    await addOneSubtitle(subtitleURL);
-
     await addOneSubtitle(subtitleURL + "&tlang=en");
+    await addOneSubtitle(subtitleURL);
   }
 
   async function extractSubtitleUrl() {
