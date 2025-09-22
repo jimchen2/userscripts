@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      1.0.13
 // @license      Unlicense
-// @description  Add dual subtitles to YouTube videos
+// @description  Add DUAL SUBStitles to YouTube videos
 // @author       Jim Chen
 // @homepage     https://jimchen.me
 // @match        https://*.youtube.com/*
@@ -48,7 +48,7 @@
   }
 
   async function handleVideoNavigation() {
-    console.log("[DUAL SUB] FIRED");
+    console.log("[DUAL SUBS] FIRED");
     const { url: subtitleURL, language } = await extractSubtitleUrl();
     if (subtitleURL == null) return;
     removeSubs();
@@ -60,42 +60,61 @@
   }
 
   async function extractSubtitleUrl() {
-    document.querySelector(".ytp-subtitles-button").click();
-    const timedtextUrl = await new Promise((resolve, reject) => {
-      console.log('Starting listener for subtitles"...');
+    const listenForTimedtext = () => {
+      return new Promise((resolve) => {
+        console.log("[DUAL SUBS] Starting listener for subtitles...");
 
-      let lastEntryCount = performance.getEntriesByType("resource").length;
-      let foundOne = false;
+        let lastEntryCount = performance.getEntriesByType("resource").length;
+        let foundOne = false;
 
-      const intervalId = setInterval(() => {
-        if (foundOne) {
-          console.log("[DUAL SUB] FOUND ONE");
-          return;
-        }
+        const intervalId = setInterval(() => {
+          if (foundOne) return;
 
-        const entries = performance.getEntriesByType("resource");
-        const newEntries = entries.slice(lastEntryCount);
-        lastEntryCount = entries.length;
+          const entries = performance.getEntriesByType("resource");
+          const newEntries = entries.slice(lastEntryCount);
+          lastEntryCount = entries.length;
 
-        for (const entry of newEntries) {
-          if (entry.name.includes("timedtext") && entry.name.includes("&pot=")) {
-            console.log("[DUAL SUB] Found timedtext request:", entry.name);
-            foundOne = true;
-            clearInterval(intervalId);
-            resolve(entry.name);
-            return;
+          for (const entry of newEntries) {
+            if (entry.name.includes("timedtext") && entry.name.includes("&pot=")) {
+              console.log("[DUAL SUBS] Found timedtext request:", entry.name);
+              foundOne = true;
+              clearInterval(intervalId);
+              resolve(entry.name);
+              return;
+            }
           }
-        }
-      }, 500);
-      setTimeout(() => {
-        if (!foundOne) {
-          clearInterval(intervalId);
-          console.log("[DUAL SUB] Listener stopped after 3 seconds (no timedtext requests found).");
-        }
-      }, 3000);
-    });
+        }, 500);
 
-    if (!timedtextUrl) return;
+        setTimeout(() => {
+          if (!foundOne) {
+            clearInterval(intervalId);
+            resolve(null);
+          }
+        }, 3000);
+      });
+    };
+
+    let timedtextUrl = null;
+    const maxAttempts = 2;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      console.log(`[DUAL SUBS] Attempt ${attempt + 1}/${maxAttempts}: Double toggle and listen...`);
+      document.querySelector(".ytp-subtitles-button").click();
+      document.querySelector(".ytp-subtitles-button").click();
+      timedtextUrl = await listenForTimedtext();
+      if (timedtextUrl) {
+        console.log("[DUAL SUBS] Found timedtext on attempt", attempt + 1);
+        break;
+      }
+
+      console.log(`[DUAL SUBS] Attempt ${attempt + 1} failed, no timedtext found.`);
+    }
+
+    if (!timedtextUrl) {
+      console.log("[DUAL SUBS] All attempts failed.");
+      return;
+    }
+
     let url = new URL(timedtextUrl);
     url.searchParams.set("fmt", "vtt");
     return { url: url.toString(), language: "en" };
