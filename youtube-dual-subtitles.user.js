@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Dual Subtitles
 // @namespace    http://tampermonkey.net/
-// @version      2.2.6
+// @version      2.2.7
 // @license      Unlicense
 // @description  Add DUAL SUBStitles to YouTube videos
 // @author       Jim Chen
@@ -13,6 +13,7 @@
   const isMobile = location.href.startsWith("https://m.youtube.com");
   const subtitleButtonSelector = isMobile ? ".ytmClosedCaptioningButtonButton" : ".ytp-subtitles-button";
   let fired = false;
+  let currentUrl = window.location.href; // Track current URL
 
   if (location.href.startsWith("https://www.youtube.com")) {
     document.addEventListener("yt-navigate-finish", () => {
@@ -23,9 +24,9 @@
     let lastUrl = window.location.href.split("#")[0];
 
     function checkUrlChanged() {
-      const currentUrl = window.location.href.split("#")[0];
-      if (currentUrl !== lastUrl) {
-        lastUrl = currentUrl;
+      const newUrl = window.location.href.split("#")[0];
+      if (newUrl !== lastUrl) {
+        lastUrl = newUrl;
         handleVideoNavigation();
       }
     }
@@ -61,9 +62,19 @@
   }
 
   async function handleVideoNavigation() {
-    if (fired == false) console.log("[DUAL SUBS] FIRED");
-    else return;
+    const newUrl = window.location.href;
+    if (newUrl !== currentUrl) {
+      console.log("[DUAL SUBS] URL changed, resetting fired variable");
+      console.log("[DUAL SUBS] Previous URL:", currentUrl);
+      console.log("[DUAL SUBS] New URL:", newUrl);
+      currentUrl = newUrl;
+      fired = false;
+    }
+
+    if (fired == true) return;
+
     fired = true;
+    console.log("[DUAL SUBS] FIRED");
     removeSubs();
 
     const languageCheckPassed = await checkLanguageCode();
