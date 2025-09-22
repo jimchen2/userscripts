@@ -71,14 +71,6 @@
 
     const subtitleURL = await extractSubtitleUrl();
     if (subtitleURL == null) return;
-    console.log("[DUAL SUBS] AAA");
-    const subtitleButton = document.querySelector(subtitleButtonSelector);
-    console.log("[DUAL SUBS] BBB");
-    if (subtitleButton && subtitleButton.getAttribute("aria-pressed") === "true") {
-      console.log("[DUAL SUBS] YouTube's subtitle is switched on, switching it off...");
-      subtitleButton.click();
-    }
-    console.log("[DUAL SUBS] CCC");
     const url = new URL(subtitleURL);
     if (!url.searchParams.has("kind")) url.searchParams.set("kind", "asr");
     if (url.searchParams.has("fmt")) {
@@ -94,6 +86,14 @@
     await addOneSubtitle(transSub);
     console.log(`[DUAL SUBS] subtitleURL ${url.toString()}`);
     await addOneSubtitle(url.toString());
+    console.log("[DUAL SUBS] AAA");
+    const subtitleButton = document.querySelector(subtitleButtonSelector);
+    console.log("[DUAL SUBS] BBB");
+    if (subtitleButton && subtitleButton.getAttribute("aria-pressed") === "true") {
+      console.log("[DUAL SUBS] YouTube's subtitle is switched on, switching it off...");
+      subtitleButton.click();
+    }
+    console.log("[DUAL SUBS] CCC");
   }
 
   function checkLanguageCode() {
