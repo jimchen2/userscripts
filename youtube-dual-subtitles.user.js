@@ -50,20 +50,23 @@
   async function handleVideoNavigation() {
     console.log("[DUAL SUBS] FIRED");
     removeSubs();
-    const { url: subtitleURL } = await extractSubtitleUrl();
+    const subtitleURL = await extractSubtitleUrl();
     if (subtitleURL == null) return;
     const subtitleButton = document.querySelector(".ytp-subtitles-button");
     if (subtitleButton && subtitleButton.getAttribute("aria-pressed") === "true") subtitleButton.click();
     const url = new URL(subtitleURL);
-    url.searchParams.set("caps", "asr");
-    url.searchParams.set("fmt", "vtt");
+    if (!url.searchParams.has("caps")) url.searchParams.set("caps", "asr");
+    if (url.searchParams.has("fmt")) {
+      url.searchParams.set("fmt", "vtt");
+    } else {
+      url.searchParams.set("fmt", "vtt");
+    }
     url.searchParams.delete("tlang");
     const transUrl = new URL(url);
     transUrl.searchParams.set("tlang", "en");
     const transSub = transUrl.toString();
     console.log(`[DUAL SUBS] transSub ${transSub}`);
     await addOneSubtitle(transSub);
-
     console.log(`[DUAL SUBS] subtitleURL ${url.toString()}`);
     await addOneSubtitle(url.toString());
   }
