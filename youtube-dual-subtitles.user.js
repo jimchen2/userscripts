@@ -17,6 +17,7 @@
     document.addEventListener("yt-navigate-finish", () => {
       handleVideoNavigation();
     });
+    handleVideoNavigation();
   } else if (isMobile) {
     let lastUrl = window.location.href.split("#")[0];
 
@@ -152,17 +153,24 @@
       });
     };
 
+    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
     let timedtextUrl = null;
     const maxAttempts = 5;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      if (attempt > 0) {
+        console.log(`[DUAL SUBS] Waiting 1000ms before attempt ${attempt + 1}...`);
+        await delay(1000);
+      }
+
       console.log(`[DUAL SUBS] Attempt ${attempt + 1}/${maxAttempts}: Double toggle and listen...`);
       console.log(`[DUAL SUBS] 111`);
       const subtitleButton = document.querySelector(subtitleButtonSelector);
       console.log(`[DUAL SUBS] 222`);
       if (!subtitleButton) {
         console.log("[DUAL SUBS] Subtitle button not found, skipping attempt");
-        continue; 
+        continue;
       }
       subtitleButton.click();
       console.log(`[DUAL SUBS] 333`);
@@ -183,7 +191,6 @@
 
     return timedtextUrl;
   }
-
   async function addOneSubtitle(url, maxRetries = 5, delay = 1000) {
     const video = document.querySelector("video");
     try {
