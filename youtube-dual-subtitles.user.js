@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Dual Subtitles
 // @namespace    http://tampermonkey.net/
-// @version      2.1
+// @version      2.2
 // @license      Unlicense
 // @description  Add DUAL SUBStitles to YouTube videos
 // @author       Jim Chen
@@ -10,11 +10,14 @@
 // @run-at       document-idle
 // ==/UserScript==
 (function () {
+  const isMobile = location.href.startsWith("https://m.youtube.com");
+  const subtitleButtonSelector = isMobile ? ".ytmClosedCaptioningButtonButton" : ".ytp-subtitles-button";
+
   if (location.href.startsWith("https://www.youtube.com")) {
     document.addEventListener("yt-navigate-finish", () => {
       handleVideoNavigation();
     });
-  } else if (location.href.startsWith("https://m.youtube.com")) {
+  } else if (isMobile) {
     let lastUrl = window.location.href.split("#")[0];
 
     function checkUrlChanged() {
@@ -56,7 +59,7 @@
 
     const subtitleURL = await extractSubtitleUrl();
     if (subtitleURL == null) return;
-    const subtitleButton = document.querySelector(".ytp-subtitles-button");
+    const subtitleButton = document.querySelector(subtitleButtonSelector);
     if (subtitleButton && subtitleButton.getAttribute("aria-pressed") === "true") subtitleButton.click();
     const url = new URL(subtitleURL);
     if (!url.searchParams.has("kind")) url.searchParams.set("kind", "asr");
@@ -154,8 +157,16 @@
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       console.log(`[DUAL SUBS] Attempt ${attempt + 1}/${maxAttempts}: Double toggle and listen...`);
-      document.querySelector(".ytp-subtitles-button").click();
-      document.querySelector(".ytp-subtitles-button").click();
+      console.log(`[DUAL SUBS] 111`);
+      const subtitleButton = document.querySelector(subtitleButtonSelector);
+      console.log(`[DUAL SUBS] 222`);
+      if (!subtitleButton) {
+        console.log("[DUAL SUBS] Subtitle button not found, skipping attempt");
+        continue; 
+      }
+      subtitleButton.click();
+      console.log(`[DUAL SUBS] 333`);
+      subtitleButton.click();
       timedtextUrl = await listenForTimedtext();
       if (timedtextUrl) {
         console.log("[DUAL SUBS] Found timedtext on attempt", attempt + 1);
