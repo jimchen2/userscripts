@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         YouTube Enhancer
+// @name         YouTube Dual Subtitles
 // @namespace    http://tampermonkey.net/
 // @version      1.0.13
 // @license      Unlicense
