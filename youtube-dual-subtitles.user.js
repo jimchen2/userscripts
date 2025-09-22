@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Dual Subtitles
 // @namespace    http://tampermonkey.net/
-// @version      2.2.5
+// @version      2.2.6
 // @license      Unlicense
 // @description  Add DUAL SUBStitles to YouTube videos
 // @author       Jim Chen
@@ -177,7 +177,7 @@
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       if (attempt > 0) {
-        console.log(`[DUAL SUBS] Waiting 1000ms before attempt ${attempt + 1}...`);
+        console.log(`[DUAL SUBS] Waiting 3000ms before attempt ${attempt + 1}...`);
         await delay(3000);
       }
 
@@ -231,9 +231,11 @@
   }
 
   function removeSubs() {
+    console.log(`[DUAL SUBS] Removing Subtitles.`);
     const video = document.getElementsByTagName("video")[0];
     if (!video) return;
     const tracks = video.getElementsByTagName("track");
+    console.log(`[DUAL SUBS] Removing tracks ${tracks}.`);
     Array.from(tracks).forEach(function (ele) {
       ele.track.mode = "hidden";
       ele.parentNode.removeChild(ele);
