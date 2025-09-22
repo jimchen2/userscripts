@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Dual Subtitles
 // @namespace    http://tampermonkey.net/
-// @version      2.2.1
+// @version      2.2.3
 // @license      Unlicense
 // @description  Add DUAL SUBStitles to YouTube videos
 // @author       Jim Chen
@@ -49,6 +49,14 @@
     handleVideoNavigation();
   } else if (location.href.startsWith("https://www.youtube.com/embed")) {
     handleVideoNavigation();
+  }
+
+  function ensureVideoPlaying() {
+    const video = document.querySelector("video");
+    if (video && video.paused) {
+      console.log("[DUAL SUBS] Video was paused, attempting to play...");
+      video.play();
+    }
   }
 
   async function handleVideoNavigation() {
@@ -186,6 +194,7 @@
 
       console.log(`[DUAL SUBS] Attempt ${attempt + 1} failed, no timedtext found.`);
     }
+    setTimeout(() => ensureVideoPlaying(), 500);
 
     if (!timedtextUrl) {
       console.log("[DUAL SUBS] All attempts failed.");
