@@ -1,14 +1,12 @@
 // ==UserScript==
 // @name         YouTube Dual Subtitles
 // @namespace    http://tampermonkey.net/
-// @version      2.2.9
+// @version      2.2.10
 // @license      Unlicense
 // @description  Add DUAL SUBStitles to YouTube videos
 // @author       Jim Chen
 // @homepage     https://jimchen.me
-// @match        https://www.youtube.com/watch*
-// @match        https://m.youtube.com/watch*
-// @match        https://www.youtube.com/embed/*//
+// @match        https://*.youtube.com/*
 // @run-at       document-idle
 // ==/UserScript==
 (function () {
