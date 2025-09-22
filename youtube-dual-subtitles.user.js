@@ -47,9 +47,47 @@
     handleVideoNavigation();
   }
 
+  function checkLanguageCode() {
+    return new Promise((resolve) => {
+      let attempts = 0;
+      const maxAttempts = 5;
+
+      const intervalId = setInterval(() => {
+        attempts++;
+        console.log(`[DUAL SUBS] Language check attempt ${attempts}/${maxAttempts}`);
+
+        try {
+          const languageCode = document.querySelector("#movie_player").getPlayerResponse().captions
+            .playerCaptionsTracklistRenderer.captionTracks[0].languageCode;
+
+          if (languageCode && languageCode.includes("de")) {
+            console.log("[DUAL SUBS] Language check passed:", languageCode);
+            clearInterval(intervalId);
+            resolve(true);
+            return;
+          } else {
+            console.log("[DUAL SUBS] Language code does not contain 'de':", languageCode);
+          }
+        } catch (error) {
+          console.log("[DUAL SUBS] Language check failed with error:", error);
+        }
+
+        if (attempts >= maxAttempts) {
+          console.log("[DUAL SUBS] Language check failed after all attempts. Skipping.");
+          clearInterval(intervalId);
+          resolve(false);
+        }
+      }, 1000);
+    });
+  }
+
   async function handleVideoNavigation() {
     console.log("[DUAL SUBS] FIRED");
     removeSubs();
+
+    const languageCheckPassed = await checkLanguageCode();
+    if (!languageCheckPassed) return;
+
     const subtitleURL = await extractSubtitleUrl();
     if (subtitleURL == null) return;
     const subtitleButton = document.querySelector(".ytp-subtitles-button");
