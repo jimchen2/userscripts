@@ -1,21 +1,21 @@
 // ==UserScript==
 // @name         YouTube Dual Subtitles
 // @namespace    http://tampermonkey.net/
-// @version      2.2.8
+// @version      2.2.9
 // @license      Unlicense
 // @description  Add DUAL SUBStitles to YouTube videos
 // @author       Jim Chen
 // @homepage     https://jimchen.me
 // @match        https://www.youtube.com/watch*
 // @match        https://m.youtube.com/watch*
-// @match        https://www.youtube.com/embed/*// 
+// @match        https://www.youtube.com/embed/*//
 // @run-at       document-idle
 // ==/UserScript==
 (function () {
   const isMobile = location.href.startsWith("https://m.youtube.com");
   const subtitleButtonSelector = isMobile ? ".ytmClosedCaptioningButtonButton" : ".ytp-subtitles-button";
   let fired = false;
-  let currentUrl = window.location.href; // Track current URL
+  let currentVideoID = extractYouTubeVideoID();
 
   if (location.href.startsWith("https://www.youtube.com")) {
     document.addEventListener("yt-navigate-finish", () => {
@@ -23,30 +23,20 @@
     });
     handleVideoNavigation();
   } else if (isMobile) {
-    let lastUrl = window.location.href.split("#")[0];
-
-    function checkUrlChanged() {
-      const newUrl = window.location.href.split("#")[0];
-      if (newUrl !== lastUrl) {
-        lastUrl = newUrl;
-        handleVideoNavigation();
-      }
-    }
-
-    window.addEventListener("popstate", checkUrlChanged);
+    window.addEventListener("popstate", handleVideoNavigation);
 
     const originalPushState = history.pushState;
     const originalReplaceState = history.replaceState;
 
     history.pushState = function () {
       const result = originalPushState.apply(this, arguments);
-      checkUrlChanged();
+      handleVideoNavigation();
       return result;
     };
 
     history.replaceState = function () {
       const result = originalReplaceState.apply(this, arguments);
-      checkUrlChanged();
+      handleVideoNavigation();
       return result;
     };
 
@@ -63,13 +53,33 @@
     }
   }
 
+  function extractYouTubeVideoID() {
+    const url = window.location.href;
+    const patterns = {
+      standard: /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?(?:[^?&]+&)*v=([^&]+)/,
+      embed: /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^?]+)/,
+      mobile: /(?:https?:\/\/)?m\.youtube\.com\/watch\?v=([^&]+)/,
+    };
+
+    let videoID = null;
+    if (patterns.standard.test(url)) {
+      videoID = url.match(patterns.standard)[1];
+    } else if (patterns.embed.test(url)) {
+      videoID = url.match(patterns.embed)[1];
+    } else if (patterns.mobile.test(url)) {
+      videoID = url.match(patterns.mobile)[1];
+    }
+    return videoID;
+  }
+
   async function handleVideoNavigation() {
-    const newUrl = window.location.href;
-    if (newUrl !== currentUrl) {
-      console.log("[DUAL SUBS] URL changed, resetting fired variable");
-      console.log("[DUAL SUBS] Previous URL:", currentUrl);
-      console.log("[DUAL SUBS] New URL:", newUrl);
-      currentUrl = newUrl;
+    console.log("handleVideoNavigation called");
+    const newVideoID = extractYouTubeVideoID();
+    if (newVideoID !== currentVideoID) {
+      console.log("[DUAL SUBS] Video ID changed, resetting fired variable");
+      console.log("[DUAL SUBS] Previous Video ID:", currentVideoID);
+      console.log("[DUAL SUBS] New Video ID:", newVideoID);
+      currentVideoID = newVideoID;
       fired = false;
     }
 
