@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Dual Subtitles
 // @namespace    http://tampermonkey.net/
-// @version      1.0.13
+// @version      2.0.0
 // @license      Unlicense
 // @description  Add DUAL SUBStitles to YouTube videos
 // @author       Jim Chen
@@ -55,13 +55,15 @@
     const subtitleButton = document.querySelector(".ytp-subtitles-button");
     if (subtitleButton && subtitleButton.getAttribute("aria-pressed") === "true") subtitleButton.click();
     const url = new URL(subtitleURL);
-    if (!url.searchParams.has("caps")) url.searchParams.set("caps", "asr");
+    url.searchParams.set("caps", "asr");
+    url.searchParams.set("fmt", "vtt");
     url.searchParams.delete("tlang");
     const transUrl = new URL(url);
     transUrl.searchParams.set("tlang", "en");
     const transSub = transUrl.toString();
     console.log(`[DUAL SUBS] transSub ${transSub}`);
     await addOneSubtitle(transSub);
+
     console.log(`[DUAL SUBS] subtitleURL ${url.toString()}`);
     await addOneSubtitle(url.toString());
   }
@@ -122,9 +124,7 @@
       return;
     }
 
-    let url = new URL(timedtextUrl);
-    url.searchParams.set("fmt", "vtt");
-    return { url: url.toString() };
+    return timedtextUrl;
   }
 
   async function addOneSubtitle(url, maxRetries = 5, delay = 1000) {
