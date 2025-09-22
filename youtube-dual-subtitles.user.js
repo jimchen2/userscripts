@@ -55,13 +55,14 @@
     const subtitleButton = document.querySelector(".ytp-subtitles-button");
     if (subtitleButton && subtitleButton.getAttribute("aria-pressed") === "true") subtitleButton.click();
     const url = new URL(subtitleURL);
-    if (url.searchParams.has("tlang")) url.searchParams.set("tlang", "en");
-    else url.searchParams.append("tlang", "en");
-    const transSub = url.toString();
+    url.searchParams.delete("tlang");
+    const transUrl = new URL(url);
+    transUrl.searchParams.set("tlang", "en");
+    const transSub = transUrl.toString();
     console.log(`[DUAL SUBS] transSub ${transSub}`);
     await addOneSubtitle(transSub);
-    console.log(`[DUAL SUBS] subtitleURL ${subtitleURL}`);
-    await addOneSubtitle(subtitleURL);
+    console.log(`[DUAL SUBS] subtitleURL ${url.toString()}`);
+    await addOneSubtitle(url.toString());
   }
 
   async function extractSubtitleUrl() {
