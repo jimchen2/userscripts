@@ -166,14 +166,17 @@
 
       console.log(`[DUAL SUBS] Attempt ${attempt + 1}/${maxAttempts}: Double toggle and listen...`);
       console.log(`[DUAL SUBS] 111`);
-      const subtitleButton = document.querySelector(subtitleButtonSelector);
+      if (isMobile) document.querySelector("#movie_player").click();
       console.log(`[DUAL SUBS] 222`);
+
+      const subtitleButton = document.querySelector(subtitleButtonSelector);
+      console.log(`[DUAL SUBS] 333`);
       if (!subtitleButton) {
         console.log("[DUAL SUBS] Subtitle button not found, skipping attempt");
         continue;
       }
       subtitleButton.click();
-      console.log(`[DUAL SUBS] 333`);
+      console.log(`[DUAL SUBS] 444`);
       subtitleButton.click();
       timedtextUrl = await listenForTimedtext();
       if (timedtextUrl) {
