@@ -55,7 +55,7 @@
     const subtitleButton = document.querySelector(".ytp-subtitles-button");
     if (subtitleButton && subtitleButton.getAttribute("aria-pressed") === "true") subtitleButton.click();
     const url = new URL(subtitleURL);
-    if (!url.searchParams.has("caps")) url.searchParams.set("caps", "asr");
+    if (!url.searchParams.has("kind")) url.searchParams.set("kind", "asr");
     if (url.searchParams.has("fmt")) {
       url.searchParams.set("fmt", "vtt");
     } else {
