@@ -60,13 +60,18 @@
           const languageCode = document.querySelector("#movie_player").getPlayerResponse().captions
             .playerCaptionsTracklistRenderer.captionTracks[0].languageCode;
 
-          if (languageCode && languageCode.includes("de")) {
-            console.log("[DUAL SUBS] Language check passed:", languageCode);
-            clearInterval(intervalId);
-            resolve(true);
-            return;
-          } else {
-            console.log("[DUAL SUBS] Language code does not contain 'de':", languageCode);
+          if (languageCode) {
+            if (languageCode.includes("de")) {
+              console.log("[DUAL SUBS] Language check passed:", languageCode);
+              clearInterval(intervalId);
+              resolve(true);
+              return;
+            } else {
+              console.log("[DUAL SUBS] Language code does not contain 'de':", languageCode);
+              clearInterval(intervalId);
+              resolve(false);
+              return;
+            }
           }
         } catch (error) {
           console.log("[DUAL SUBS] Language check failed with error:", error);
@@ -80,7 +85,6 @@
       }, 1000);
     });
   }
-
   async function handleVideoNavigation() {
     console.log("[DUAL SUBS] FIRED");
     removeSubs();
