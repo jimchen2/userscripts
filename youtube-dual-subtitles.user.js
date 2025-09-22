@@ -73,6 +73,12 @@
   async function handleVideoNavigation() {
     console.log("handleVideoNavigation called");
     const newVideoID = extractYouTubeVideoID();
+    if (!newVideoID) {
+      console.log("[DUAL SUBS] Not on a video page, returning");
+      currentVideoID = null;
+      fired = false;
+      return;
+    }
     if (newVideoID !== currentVideoID) {
       console.log("[DUAL SUBS] Video ID changed, resetting fired variable");
       console.log("[DUAL SUBS] Previous Video ID:", currentVideoID);
