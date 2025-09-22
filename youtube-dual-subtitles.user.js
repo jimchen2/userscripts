@@ -55,6 +55,7 @@
     const subtitleButton = document.querySelector(".ytp-subtitles-button");
     if (subtitleButton && subtitleButton.getAttribute("aria-pressed") === "true") subtitleButton.click();
     const url = new URL(subtitleURL);
+    if (!url.searchParams.has("caps")) url.searchParams.set("caps", "asr");
     url.searchParams.delete("tlang");
     const transUrl = new URL(url);
     transUrl.searchParams.set("tlang", "en");
