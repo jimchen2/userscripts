@@ -178,7 +178,7 @@
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       if (attempt > 0) {
         console.log(`[DUAL SUBS] Waiting 1000ms before attempt ${attempt + 1}...`);
-        await delay(1000);
+        await delay(3000);
       }
 
       console.log(`[DUAL SUBS] Attempt ${attempt + 1}/${maxAttempts}: Double toggle and listen...`);
