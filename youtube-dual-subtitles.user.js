@@ -62,6 +62,7 @@
 
   async function handleVideoNavigation() {
     if (fired == false) console.log("[DUAL SUBS] FIRED");
+    else return;
     fired = true;
     removeSubs();
 
