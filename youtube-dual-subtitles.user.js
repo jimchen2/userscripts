@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Dual Subtitles
 // @namespace    http://tampermonkey.net/
-// @version      2.2.4
+// @version      2.2.5
 // @license      Unlicense
 // @description  Add DUAL SUBStitles to YouTube videos
 // @author       Jim Chen
@@ -12,6 +12,7 @@
 (function () {
   const isMobile = location.href.startsWith("https://m.youtube.com");
   const subtitleButtonSelector = isMobile ? ".ytmClosedCaptioningButtonButton" : ".ytp-subtitles-button";
+  let fired = false;
 
   if (location.href.startsWith("https://www.youtube.com")) {
     document.addEventListener("yt-navigate-finish", () => {
@@ -60,7 +61,8 @@
   }
 
   async function handleVideoNavigation() {
-    console.log("[DUAL SUBS] FIRED");
+    if (fired == false) console.log("[DUAL SUBS] FIRED");
+    fired = true;
     removeSubs();
 
     const languageCheckPassed = await checkLanguageCode();
