@@ -49,9 +49,11 @@
 
   async function handleVideoNavigation() {
     console.log("[DUAL SUBS] FIRED");
-    const { url: subtitleURL, language } = await extractSubtitleUrl();
+    const { url: subtitleURL } = await extractSubtitleUrl();
     if (subtitleURL == null) return;
     removeSubs();
+    const subtitleButton = document.querySelector(".ytp-subtitles-button");
+    if (subtitleButton && subtitleButton.getAttribute("aria-pressed") === "true") subtitleButton.click();
     const url = new URL(subtitleURL);
     if (url.searchParams.has("tlang")) url.searchParams.set("tlang", "en");
     else url.searchParams.append("tlang", "en");
@@ -117,7 +119,7 @@
 
     let url = new URL(timedtextUrl);
     url.searchParams.set("fmt", "vtt");
-    return { url: url.toString(), language: "en" };
+    return { url: url.toString() };
   }
 
   async function addOneSubtitle(url, maxRetries = 5, delay = 1000) {
