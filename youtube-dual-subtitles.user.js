@@ -149,7 +149,7 @@
     };
 
     let timedtextUrl = null;
-    const maxAttempts = 2;
+    const maxAttempts = 5;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       console.log(`[DUAL SUBS] Attempt ${attempt + 1}/${maxAttempts}: Double toggle and listen...`);
