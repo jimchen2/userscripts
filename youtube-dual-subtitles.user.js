@@ -180,7 +180,7 @@
     subtitleButton.click();
     subtitleButton.click();
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const newEntries = performance.getEntriesByType("resource").slice(initialEntryCount);
     console.log(`[DUAL SUBS] New entries detected: ${newEntries.length}`);
