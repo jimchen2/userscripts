@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Dual Subtitles
 // @namespace    http://tampermonkey.net/
-// @version      2.2.12
+// @version      2.2.13
 // @license      Unlicense
 // @description  Add DUAL SUBStitles to YouTube videos
 // @author       Jim Chen
@@ -104,6 +104,7 @@
     }
 
     if (subtitleURL == null) return;
+
     const url = new URL(subtitleURL);
     if (!url.searchParams.has("kind")) url.searchParams.set("kind", "asr");
     if (url.searchParams.has("fmt")) {
@@ -127,6 +128,16 @@
       console.log("[DUAL SUBS] YouTube's subtitle is switched on, switching it off...");
       subtitleButton.click();
     }
+
+    setTimeout(() => ensureVideoPlaying(), 500);
+    function ensureVideoPlaying() {
+      const video = document.querySelector("video");
+      if (video && video.paused) {
+        console.log("[DUAL SUBS] Video was paused, attempting to play...");
+        video.play();
+      }
+    }
+
     console.log("[DUAL SUBS] CCC");
   }
 
@@ -219,14 +230,6 @@
       console.log("[DUAL SUBS] ❌ No timedtext requests with &pot= parameter found");
     }
 
-    setTimeout(() => ensureVideoPlaying(), 500);
-    function ensureVideoPlaying() {
-      const video = document.querySelector("video");
-      if (video && video.paused) {
-        console.log("[DUAL SUBS] Video was paused, attempting to play...");
-        video.play();
-      }
-    }
     return timedtextUrl;
   }
   async function addOneSubtitle(url, maxRetries = 5, delay = 1000) {
