@@ -11,7 +11,6 @@
 // ==/UserScript==
 (function () {
   const isMobile = location.href.startsWith("https://m.youtube.com");
-  const subtitleButtonSelector = isMobile ? ".ytmClosedCaptioningButtonButton" : ".ytp-subtitles-button";
   let fired = false;
   let currentVideoID = extractYouTubeVideoID();
 
@@ -114,6 +113,7 @@
     console.log(`[DUAL SUBS] subtitleURL ${url.toString()}`);
     await addOneSubtitle(url.toString());
     console.log("[DUAL SUBS] AAA");
+    const subtitleButtonSelector = isMobile ? ".ytmClosedCaptioningButtonButton" : ".ytp-subtitles-button";
     const subtitleButton = document.querySelector(subtitleButtonSelector);
     console.log("[DUAL SUBS] BBB");
     if (subtitleButton && subtitleButton.getAttribute("aria-pressed") === "true") {
@@ -161,42 +161,57 @@
       }, 1000);
     });
   }
-
   async function extractSubtitleUrl() {
     const listenForTimedtext = () => {
       return new Promise((resolve) => {
-        let lastEntryCount = performance.getEntriesByType("resource").length;
-        let foundOne = false;
-        const intervalId = setInterval(() => {
-          if (foundOne) return;
+        const initialEntryCount = performance.getEntriesByType("resource").length;
+        setTimeout(() => {
           const entries = performance.getEntriesByType("resource");
-          const newEntries = entries.slice(lastEntryCount);
-          lastEntryCount = entries.length;
+          const newEntries = entries.slice(initialEntryCount);
           for (const entry of newEntries) {
             if (entry.name.includes("timedtext") && entry.name.includes("&pot=")) {
               console.log("[DUAL SUBS] Found timedtext request:", entry.name);
-              foundOne = true;
-              clearInterval(intervalId);
               resolve(entry.name);
               return;
             }
           }
+
+          // No timedtext request found
+          resolve(null);
         }, 500);
-        setTimeout(() => {
-          if (!foundOne) {
-            clearInterval(intervalId);
-            resolve(null);
-          }
-        }, 3000);
       });
     };
-    let timedtextUrl = null;
+
+    const isMobile = location.href.startsWith("https://m.youtube.com");
+    const subtitleButtonSelector = isMobile ? ".ytmClosedCaptioningButtonButton" : ".ytp-subtitles-button";
+
     if (isMobile) document.querySelector("#movie_player").click();
-    const subtitleButton = document.querySelector(subtitleButtonSelector);
-    // Rapidly toggle the button twice, result in a req(failed req is fine) to the url
+
+    // Start listening BEFORE clicking
+    const timedtextPromise = listenForTimedtext();
+
+    async function findSubtitleButtonWithRetry(subtitleButtonSelector, maxAttempts = 3, delayMs = 1000) {
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        const subtitleButton = document.querySelector(subtitleButtonSelector);
+        if (subtitleButton) return subtitleButton;
+        if (attempt < maxAttempts) {
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+        }
+      }
+      return null;
+    }
+
+    const subtitleButton = await findSubtitleButtonWithRetry(subtitleButtonSelector);
+    if (!subtitleButton) return;
+
+    // Rapidly toggle the button twice, result in a req to the url
+    // (failed req is fine, we just want the url)
     subtitleButton.click();
     subtitleButton.click();
-    timedtextUrl = await listenForTimedtext();
+
+    // Now wait for the result
+    const timedtextUrl = await timedtextPromise;
+
     setTimeout(() => ensureVideoPlaying(), 500);
     return timedtextUrl;
   }
