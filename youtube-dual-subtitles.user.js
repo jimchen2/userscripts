@@ -165,18 +165,13 @@
   async function extractSubtitleUrl() {
     const listenForTimedtext = () => {
       return new Promise((resolve) => {
-        console.log("[DUAL SUBS] Starting listener for subtitles...");
-
         let lastEntryCount = performance.getEntriesByType("resource").length;
         let foundOne = false;
-
         const intervalId = setInterval(() => {
           if (foundOne) return;
-
           const entries = performance.getEntriesByType("resource");
           const newEntries = entries.slice(lastEntryCount);
           lastEntryCount = entries.length;
-
           for (const entry of newEntries) {
             if (entry.name.includes("timedtext") && entry.name.includes("&pot=")) {
               console.log("[DUAL SUBS] Found timedtext request:", entry.name);
@@ -187,7 +182,6 @@
             }
           }
         }, 500);
-
         setTimeout(() => {
           if (!foundOne) {
             clearInterval(intervalId);
@@ -196,47 +190,14 @@
         }, 3000);
       });
     };
-
-    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
     let timedtextUrl = null;
-    const maxAttempts = 5;
-
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      if (attempt > 0) {
-        console.log(`[DUAL SUBS] Waiting 3000ms before attempt ${attempt + 1}...`);
-        await delay(3000);
-      }
-
-      console.log(`[DUAL SUBS] Attempt ${attempt + 1}/${maxAttempts}: Double toggle and listen...`);
-      console.log(`[DUAL SUBS] 111`);
-      if (isMobile) document.querySelector("#movie_player").click();
-      console.log(`[DUAL SUBS] 222`);
-
-      const subtitleButton = document.querySelector(subtitleButtonSelector);
-      console.log(`[DUAL SUBS] 333`);
-      if (!subtitleButton) {
-        console.log("[DUAL SUBS] Subtitle button not found, skipping attempt");
-        continue;
-      }
-      subtitleButton.click();
-      console.log(`[DUAL SUBS] 444`);
-      subtitleButton.click();
-      timedtextUrl = await listenForTimedtext();
-      if (timedtextUrl) {
-        console.log("[DUAL SUBS] Found timedtext on attempt", attempt + 1);
-        break;
-      }
-
-      console.log(`[DUAL SUBS] Attempt ${attempt + 1} failed, no timedtext found.`);
-    }
+    if (isMobile) document.querySelector("#movie_player").click();
+    const subtitleButton = document.querySelector(subtitleButtonSelector);
+    // Rapidly toggle the button twice, result in a req(failed req is fine) to the url
+    subtitleButton.click();
+    subtitleButton.click();
+    timedtextUrl = await listenForTimedtext();
     setTimeout(() => ensureVideoPlaying(), 500);
-
-    if (!timedtextUrl) {
-      console.log("[DUAL SUBS] All attempts failed.");
-      return;
-    }
-
     return timedtextUrl;
   }
   async function addOneSubtitle(url, maxRetries = 5, delay = 1000) {
