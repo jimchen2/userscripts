@@ -162,6 +162,14 @@
     });
   }
   async function extractSubtitleUrl() {
+    const isMobile = location.href.startsWith("https://m.youtube.com");
+    const subtitleButtonSelector = isMobile ? ".ytmClosedCaptioningButtonButton" : ".ytp-subtitles-button";
+    console.log("[DUAL SUBS] 111");
+
+    if (isMobile) document.querySelector("#movie_player").click();
+    console.log("[DUAL SUBS] 222");
+
+    // Start listening BEFORE clicking
     const listenForTimedtext = () => {
       return new Promise((resolve) => {
         const initialEntryCount = performance.getEntriesByType("resource").length;
@@ -181,17 +189,12 @@
         }, 500);
       });
     };
-
-    const isMobile = location.href.startsWith("https://m.youtube.com");
-    const subtitleButtonSelector = isMobile ? ".ytmClosedCaptioningButtonButton" : ".ytp-subtitles-button";
-
-    if (isMobile) document.querySelector("#movie_player").click();
-
-    // Start listening BEFORE clicking
     const timedtextPromise = listenForTimedtext();
+    console.log("[DUAL SUBS] 333");
 
     async function findSubtitleButtonWithRetry(subtitleButtonSelector, maxAttempts = 3, delayMs = 1000) {
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        console.log(`[DEBUG] Attempt ${attempt}/${maxAttempts} to find subtitle button`);
         const subtitleButton = document.querySelector(subtitleButtonSelector);
         if (subtitleButton) return subtitleButton;
         if (attempt < maxAttempts) {
@@ -202,7 +205,11 @@
     }
 
     const subtitleButton = await findSubtitleButtonWithRetry(subtitleButtonSelector);
-    if (!subtitleButton) return;
+    if (!subtitleButton) {
+      console.log("[DUAL SUBS] Subtitle Button not Found");
+      return;
+    }
+    console.log(`[DUAL SUBS] 444 ${subtitleButton}`);
 
     // Rapidly toggle the button twice, result in a req to the url
     // (failed req is fine, we just want the url)
@@ -210,6 +217,7 @@
     subtitleButton.click();
 
     // Now wait for the result
+
     const timedtextUrl = await timedtextPromise;
 
     setTimeout(() => ensureVideoPlaying(), 500);
