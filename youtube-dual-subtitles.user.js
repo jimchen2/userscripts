@@ -42,14 +42,6 @@
     handleVideoNavigation();
   }
 
-  function ensureVideoPlaying() {
-    const video = document.querySelector("video");
-    if (video && video.paused) {
-      console.log("[DUAL SUBS] Video was paused, attempting to play...");
-      video.play();
-    }
-  }
-
   function extractYouTubeVideoID() {
     const url = window.location.href;
     const patterns = {
@@ -161,40 +153,15 @@
       }, 1000);
     });
   }
+
   async function extractSubtitleUrl() {
     const isMobile = location.href.startsWith("https://m.youtube.com");
     const subtitleButtonSelector = isMobile ? ".ytmClosedCaptioningButtonButton" : ".ytp-subtitles-button";
-    console.log("[DUAL SUBS] 111");
 
     if (isMobile) document.querySelector("#movie_player").click();
-    console.log("[DUAL SUBS] 222");
-
-    // Start listening BEFORE clicking
-    const listenForTimedtext = () => {
-      return new Promise((resolve) => {
-        const initialEntryCount = performance.getEntriesByType("resource").length;
-        setTimeout(() => {
-          const entries = performance.getEntriesByType("resource");
-          const newEntries = entries.slice(initialEntryCount);
-          for (const entry of newEntries) {
-            if (entry.name.includes("timedtext") && entry.name.includes("&pot=")) {
-              console.log("[DUAL SUBS] Found timedtext request:", entry.name);
-              resolve(entry.name);
-              return;
-            }
-          }
-
-          // No timedtext request found
-          resolve(null);
-        }, 500);
-      });
-    };
-    const timedtextPromise = listenForTimedtext();
-    console.log("[DUAL SUBS] 333");
 
     async function findSubtitleButtonWithRetry(subtitleButtonSelector, maxAttempts = 3, delayMs = 1000) {
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        console.log(`[DEBUG] Attempt ${attempt}/${maxAttempts} to find subtitle button`);
         const subtitleButton = document.querySelector(subtitleButtonSelector);
         if (subtitleButton) return subtitleButton;
         if (attempt < maxAttempts) {
@@ -205,22 +172,43 @@
     }
 
     const subtitleButton = await findSubtitleButtonWithRetry(subtitleButtonSelector);
-    if (!subtitleButton) {
-      console.log("[DUAL SUBS] Subtitle Button not Found");
-      return;
+    if (!subtitleButton) return;
+
+    const initialEntryCount = performance.getEntriesByType("resource").length;
+
+    // Toggle button twice to trigger timedtext request
+    subtitleButton.click();
+    subtitleButton.click();
+
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    const newEntries = performance.getEntriesByType("resource").slice(initialEntryCount);
+    console.log(`[DUAL SUBS] New entries detected: ${newEntries.length}`);
+    let timedtextUrl = null;
+
+    for (const entry of newEntries) {
+      const isTimedtext = entry.name.includes("timedtext");
+      const hasPot = entry.name.includes("&pot=");
+
+      if (isTimedtext && hasPot) {
+        console.log("[DUAL SUBS] ✅ Found matching timedtext request with &pot= parameter!");
+        timedtextUrl = entry.name;
+        break;
+      }
     }
-    console.log(`[DUAL SUBS] 444 ${subtitleButton}`);
 
-    // Rapidly toggle the button twice, result in a req to the url
-    // (failed req is fine, we just want the url)
-    subtitleButton.click();
-    subtitleButton.click();
-
-    // Now wait for the result
-
-    const timedtextUrl = await timedtextPromise;
+    if (!timedtextUrl) {
+      console.log("[DUAL SUBS] ❌ No timedtext requests with &pot= parameter found");
+    }
 
     setTimeout(() => ensureVideoPlaying(), 500);
+    function ensureVideoPlaying() {
+      const video = document.querySelector("video");
+      if (video && video.paused) {
+        console.log("[DUAL SUBS] Video was paused, attempting to play...");
+        video.play();
+      }
+    }
     return timedtextUrl;
   }
   async function addOneSubtitle(url, maxRetries = 5, delay = 1000) {
