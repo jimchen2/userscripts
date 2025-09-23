@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Dual Subtitles
 // @namespace    http://tampermonkey.net/
-// @version      2.2.11
+// @version      2.2.12
 // @license      Unlicense
 // @description  Add DUAL SUBStitles to YouTube videos
 // @author       Jim Chen
@@ -87,7 +87,22 @@
     const languageCheckPassed = await checkLanguageCode();
     if (!languageCheckPassed) return;
 
-    const subtitleURL = await extractSubtitleUrl();
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    let subtitleURL = null;
+
+    for (let attempt = 0; attempt < 3 && subtitleURL == null; attempt++) {
+      if (attempt > 0) {
+        await sleep(5000);
+      }
+
+      try {
+        subtitleURL = await extractSubtitleUrl();
+      } catch (error) {
+        console.log(`Attempt ${attempt + 1} failed:`, error);
+      }
+    }
+
     if (subtitleURL == null) return;
     const url = new URL(subtitleURL);
     if (!url.searchParams.has("kind")) url.searchParams.set("kind", "asr");
@@ -158,7 +173,10 @@
     const isMobile = location.href.startsWith("https://m.youtube.com");
     const subtitleButtonSelector = isMobile ? ".ytmClosedCaptioningButtonButton" : ".ytp-subtitles-button";
 
-    if (isMobile) document.querySelector("#movie_player").click();
+    if (isMobile) {
+      document.querySelector("#movie_player").click();
+      document.querySelector("#movie_player").click();
+    }
 
     async function findSubtitleButtonWithRetry(subtitleButtonSelector, maxAttempts = 3, delayMs = 1000) {
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
