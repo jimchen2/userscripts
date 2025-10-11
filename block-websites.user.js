@@ -1,15 +1,18 @@
 // ==UserScript==
 // @name         Block Websites
 // @namespace    http://tampermonkey.net/
-// @version      5.1
+// @version      6.1
 // @license      Unlicense
 // @description  Block Harmful Websites
 // @author       Jim Chen
 // @match        *://*.reddit.com/*
 // @match        *://*.huaren.us/*
 // @match        *://*.aistudio.google.com/*
+// @match        *://*.tieba.baidu.com/*
 // @run-at       document-start
 // @grant        none
+// @downloadURL https://update.greasyfork.org/scripts/550885/Block%20Websites.user.js
+// @updateURL https://update.greasyfork.org/scripts/550885/Block%20Websites.meta.js
 // ==/UserScript==
 
 (function () {
