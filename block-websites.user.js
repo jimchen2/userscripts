@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         Block Websites
 // @namespace    http://tampermonkey.net/
-// @version      6.2
+// @version      6.3
 // @license      Unlicense
 // @description  Block Harmful Websites
 // @author       Jim Chen
 // @match        *://*.reddit.com/*
 // @match        *://*.huaren.us/*
 // @match        *://*.tieba.baidu.com/*
+// @match        *://*.aistudio.google.com/*
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
