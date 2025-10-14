@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LMArena Auto Setup
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.2
 // @description  Auto redirect to direct mode and select Claude Opus model on lmarena.ai
 // @author       Jim Chen
 // @match        https://lmarena.ai/*
@@ -28,7 +28,7 @@
         }, 500);
     }
 
-    // Function to click on Claude Opus model
+    // Function to click
     function selectClaudeOpus() {
         // First, find and click the MODEL dropdown button (not the mode selector)
         // Target the button that contains the model text or has model-dropdown data attribute
@@ -47,9 +47,9 @@
                     const dataValue = option.getAttribute('data-value');
                     const textContent = option.textContent || '';
                     
-                    if (dataValue && dataValue.includes('claude-opus-4-1-20250805')) {
+                    if (dataValue && dataValue.includes('claude-sonnet-4-5-20250929')) {
                         claudeOption = option;
-                    } else if (textContent.includes('claude-opus-4-1-20250805')) {
+                    } else if (textContent.includes('claude-sonnet-4-5-20250929')) {
                         claudeOption = option;
                     }
                 });
