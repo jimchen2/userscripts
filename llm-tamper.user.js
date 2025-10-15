@@ -47,70 +47,18 @@
                     const dataValue = option.getAttribute('data-value');
                     const textContent = option.textContent || '';
                     
-                    if (dataValue && dataValue.includes('claude-sonnet-4-5-20250929')) {
+                    if (dataValue && dataValue.includes('claude-3-5-sonnet-20241022')) {
                         claudeOption = option;
-                    } else if (textContent.includes('claude-sonnet-4-5-20250929')) {
-                        claudeOption = option;
-                    }
+                    } 
                 });
                 
                 if (claudeOption) {
                     console.log('Found Claude Opus option, clicking...');
                     claudeOption.click();
                 } else {
-                    console.log('Claude Opus option not found in dropdown');
-                    // Try alternative selectors
-                    const alternativeOption = document.querySelector('[data-value*="claude-opus-4-1-20250805"]');
-                    if (alternativeOption) {
-                        console.log('Found Claude Opus with alternative selector');
-                        alternativeOption.click();
-                    }
                 }
             }, 500);
         });
-    }
-
-    // Alternative function if the data-sentry attribute is not available
-    function selectClaudeOpusAlternative() {
-        // Look for the button that contains claude-opus text
-        const buttons = document.querySelectorAll('button[role="combobox"]');
-        let modelButton = null;
-        
-        buttons.forEach(button => {
-            if (button.textContent && button.textContent.includes('claude-opus')) {
-                modelButton = button;
-            }
-        });
-        
-        if (modelButton) {
-            console.log('Found model button via text content, clicking...');
-            modelButton.click();
-            
-            // Wait a bit for the dropdown to open
-            setTimeout(() => {
-                // Look for the Claude Opus option
-                const options = document.querySelectorAll('[role="option"]');
-                let claudeOption = null;
-                
-                options.forEach(option => {
-                    const dataValue = option.getAttribute('data-value');
-                    const textContent = option.textContent || '';
-                    
-                    if (dataValue && dataValue.includes('claude-opus-4-1-20250805')) {
-                        claudeOption = option;
-                    } else if (textContent.includes('claude-opus-4-1-20250805')) {
-                        claudeOption = option;
-                    }
-                });
-                
-                if (claudeOption) {
-                    console.log('Found Claude Opus option, clicking...');
-                    claudeOption.click();
-                }
-            }, 500);
-        } else {
-            console.log('Model button not found via text content');
-        }
     }
 
     // Main logic
@@ -142,8 +90,6 @@
                 if (modelDropdownButton) {
                     selectClaudeOpus();
                 } else {
-                    // Fallback to alternative method
-                    selectClaudeOpusAlternative();
                 }
             }, 1000);
         }
