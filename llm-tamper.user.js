@@ -47,7 +47,7 @@
                     const dataValue = option.getAttribute('data-value');
                     const textContent = option.textContent || '';
                     
-                    if (dataValue && dataValue.includes('claude-3-5-sonnet-20241022')) {
+                    if (dataValue && dataValue.includes('claude-sonnet-4-20250514')) {
                         claudeOption = option;
                     } 
                 });
