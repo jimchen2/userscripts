@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LMArena Auto Setup
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @description  Auto redirect to direct mode and select Claude Opus model on lmarena.ai
 // @author       Jim Chen
 // @match        https://lmarena.ai/*
